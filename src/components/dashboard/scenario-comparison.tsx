@@ -108,15 +108,21 @@ interface ScenarioComparisonProps {
 
 export function ScenarioComparison({
   activeScenario = sampleScenarios[0],
+  onSelectScenario,
 }: ScenarioComparisonProps) {
-  const [scenario] = useState<ScenarioData>(activeScenario);
+  const [scenario, setScenario] = useState<ScenarioData>(activeScenario);
+
+  const handleSelectScenario = (sc: ScenarioData) => {
+    setScenario(sc);
+    onSelectScenario?.(sc);
+  };
 
   return (
     <section className="relative overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/90 p-6 shadow-xl backdrop-blur-2xl transition-all duration-300 dark:border-white/10 dark:bg-slate-900/90 sm:p-8">
       {/* Glow Backdrop */}
       <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-cyan-400/15 blur-3xl" />
 
-      {/* Header & Title */}
+      {/* Header & Scenario Selection Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/80 pb-5 dark:border-white/10">
         <div>
           <div className="flex items-center gap-2">
@@ -129,9 +135,22 @@ export function ScenarioComparison({
             {scenario.name}
           </h2>
         </div>
-        <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3.5 py-1.5 text-xs font-medium text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-          <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-sm" />
-          <span>Completed · {scenario.timestamp}</span>
+
+        {/* Interactive Scenario Tabs */}
+        <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 p-1 dark:border-white/10 dark:bg-slate-950">
+          {sampleScenarios.map((sc, idx) => (
+            <button
+              key={sc.id}
+              onClick={() => handleSelectScenario(sc)}
+              className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
+                scenario.id === sc.id
+                  ? "bg-cyan-600 text-white shadow-md"
+                  : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+              }`}
+            >
+              Scenario {idx + 1}
+            </button>
+          ))}
         </div>
       </div>
 

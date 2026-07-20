@@ -135,10 +135,11 @@ export function AiCopilot() {
   const handleSend = () => {
     if (!inputValue.trim()) return;
 
+    const userText = inputValue;
     const newUserMsg: Message = {
-      id: `msg-${Date.now()}`,
+      id: `usr-${messages.length}-${userText.length}`,
       role: "user",
-      text: inputValue
+      text: userText,
     };
 
     setMessages((prev) => [...prev, newUserMsg]);
@@ -148,9 +149,9 @@ export function AiCopilot() {
     setTimeout(() => {
       setIsTyping(false);
       const newAiMsg: Message = {
-        id: `msg-${Date.now() + 1}`,
+        id: `ai-${messages.length + 1}`,
         role: "ai",
-        data: getMockResponse(newUserMsg.text || "")
+        data: getMockResponse(userText),
       };
       setMessages((prev) => [...prev, newAiMsg]);
     }, 1500);
@@ -163,7 +164,24 @@ export function AiCopilot() {
   };
 
   const handleActionClick = (actionLabel: string) => {
-    setInputValue(actionLabel);
+    const newUserMsg: Message = {
+      id: `usr-act-${messages.length}`,
+      role: "user",
+      text: actionLabel,
+    };
+
+    setMessages((prev) => [...prev, newUserMsg]);
+    setIsTyping(true);
+
+    setTimeout(() => {
+      setIsTyping(false);
+      const newAiMsg: Message = {
+        id: `ai-act-${messages.length + 1}`,
+        role: "ai",
+        data: getMockResponse(actionLabel),
+      };
+      setMessages((prev) => [...prev, newAiMsg]);
+    }, 1200);
   };
 
   return (

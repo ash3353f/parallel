@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, useMemo, useEffect, useSyncExternalStore } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, Html } from "@react-three/drei";
 import * as THREE from "three";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -21,7 +21,6 @@ import {
   Sparkles,
   Sun,
   Truck,
-  User,
   Volume2,
   VolumeX,
   Warehouse,
@@ -61,12 +60,12 @@ export interface MachineData {
   id: string;
   name: string;
   type: string;
-  health: number; // 0 - 100
-  temperature: number; // °C
-  powerDraw: number; // kW
-  vibration: number; // g
+  health: number;
+  temperature: number;
+  powerDraw: number;
+  vibration: number;
   maintenanceDueDays: number;
-  failureProbability: number; // %
+  failureProbability: number;
   aiRecommendation: string;
 }
 
@@ -86,6 +85,7 @@ export interface FloorData {
 export interface Building3DDef {
   id: BuildingId;
   name: string;
+  shortLabel: string;
   type: string;
   position: [number, number, number];
   size: [number, number, number];
@@ -103,13 +103,14 @@ const BUILDINGS_DATA: Record<BuildingId, Building3DDef> = {
   hq: {
     id: "hq",
     name: "Executive HQ",
+    shortLabel: "HQ",
     type: "Global Command Center",
-    position: [-4, 0, -2],
-    size: [2.2, 5.0, 2.2],
+    position: [-3.8, 0, -2.8],
+    size: [2.2, 5.2, 2.2],
     color: "#eef1f5",
     roofColor: "#cbd5e1",
-    windowColor: "#3aa0ff",
-    accentColor: "#22d3ee",
+    windowColor: "#38bdf8",
+    accentColor: "#0284c7",
     icon: Building2,
     healthState: "healthy",
     healthScore: 99,
@@ -135,38 +136,19 @@ const BUILDINGS_DATA: Record<BuildingId, Building3DDef> = {
         aiAgentsCount: 5,
         maintenanceStatus: "All Core Systems Nominal",
       },
-      {
-        floorNumber: 2,
-        floorName: "AI Command Center & Data Mesh",
-        deptName: "Digital Twin Engineering",
-        healthState: "healthy",
-        healthScore: 98,
-        metrics: [
-          { label: "Model Latency", value: "4ms Real-Time" },
-          { label: "Data Throughput", value: "1.4 TB/sec" },
-          { label: "Agent Precision", value: "99.9%" },
-        ],
-        employees: [
-          { id: "e3", name: "Elena Rostova", role: "VP Supply Chain Architecture", dept: "Operations", status: "In Executive Briefing", currentTask: "Transatlantic freight route alignment", efficiency: 96 },
-        ],
-        machines: [
-          { id: "m2", name: "Real-Time Telemetry Gateway", type: "High-Speed Switch Array", health: 98, temperature: 41, powerDraw: 85, vibration: 0.02, maintenanceDueDays: 30, failureProbability: 0.2, aiRecommendation: "Packet buffer headroom optimal." },
-        ],
-        aiAgentsCount: 8,
-        maintenanceStatus: "Data Mesh Server Cluster Healthy",
-      },
     ],
   },
   factory: {
     id: "factory",
     name: "Apex GigaFactory",
+    shortLabel: "FACTORY",
     type: "Automated Manufacturing Plant",
-    position: [4, 0, -3],
-    size: [2.8, 3.8, 2.8],
+    position: [4.2, 0, -3.2],
+    size: [3.0, 3.8, 3.0],
     color: "#fff3e0",
     roofColor: "#ffe0b2",
-    windowColor: "#ff9800",
-    accentColor: "#f97316",
+    windowColor: "#f97316",
+    accentColor: "#ea580c",
     icon: Factory,
     healthState: "warning",
     healthScore: 88,
@@ -184,61 +166,39 @@ const BUILDINGS_DATA: Record<BuildingId, Building3DDef> = {
         ],
         employees: [
           { id: "e8", name: "Marcus Vance", role: "Lead Production Engineer", dept: "Robotics", status: "Monitoring GigaPress #4", currentTask: "Thermal dissipation check on GigaPress #4", efficiency: 93 },
-          { id: "e9", name: "Hiroshi Tanaka", role: "Robotics Technician", dept: "Assembly", status: "Replacing Welding Tip", currentTask: "Cell #3 welding arm tip swap", efficiency: 92 },
         ],
         machines: [
-          { id: "m3", name: "GigaPress Assembly Cell #3", type: "High-Pressure Die Casting", health: 82, temperature: 68, powerDraw: 420, vibration: 0.24, maintenanceDueDays: 4, failureProbability: 2.8, aiRecommendation: "Thermal peak detected. Shift 8% throughput to secondary cell to avoid premature seal wear." },
-          { id: "m4", name: "Robotic Welding Arm #4", type: "6-Axis Precision Welder", health: 91, temperature: 52, powerDraw: 180, vibration: 0.08, maintenanceDueDays: 14, failureProbability: 1.1, aiRecommendation: "Welding tip wear normal. Scheduled replacement in 14 days." },
+          { id: "m3", name: "GigaPress Assembly Cell #3", type: "High-Pressure Die Casting", health: 82, temperature: 68, powerDraw: 420, vibration: 0.24, maintenanceDueDays: 4, failureProbability: 2.8, aiRecommendation: "Thermal peak detected. Shift 8% throughput to secondary cell." },
         ],
         aiAgentsCount: 14,
         maintenanceStatus: "Assembly Cell #3 Maintenance Due in 4 Days",
-      },
-      {
-        floorNumber: 1,
-        floorName: "Conveyor Lines & Raw Material Staging",
-        deptName: "Material Supply & Inbound Freight",
-        healthState: "healthy",
-        healthScore: 94,
-        metrics: [
-          { label: "Conveyor Velocity", value: "4.2 m/s" },
-          { label: "Raw Stock Level", value: "94% Buffer" },
-          { label: "Staging Throughput", value: "1,200 Tons/day" },
-        ],
-        employees: [
-          { id: "e10", name: "Carlos Gomez", role: "Material Staging Lead", dept: "Inbound Supply", status: "Inspecting Pallets", currentTask: "Raw aluminum coil intake check", efficiency: 95 },
-        ],
-        machines: [
-          { id: "m5", name: "High-Speed Conveyor Belt A-1", type: "Automated Roller Conveyor", health: 96, temperature: 38, powerDraw: 110, vibration: 0.04, maintenanceDueDays: 28, failureProbability: 0.4, aiRecommendation: "Roller lubrication optimal." },
-        ],
-        aiAgentsCount: 8,
-        maintenanceStatus: "Conveyor Belt Tension Normal",
       },
     ],
   },
   warehouse: {
     id: "warehouse",
     name: "Central Automated Logistics",
+    shortLabel: "WAREHOUSE",
     type: "High-Bay AGV Storage",
-    position: [0, 0, 0],
-    size: [3.0, 3.0, 3.0],
-    color: "#e3f2fd",
-    roofColor: "#bbdefb",
-    windowColor: "#2196f3",
-    accentColor: "#3b82f6",
+    position: [3.8, 0, 2.8],
+    size: [2.8, 3.2, 2.8],
+    color: "#e0f2fe",
+    roofColor: "#bae6fd",
+    windowColor: "#0284c7",
+    accentColor: "#2563eb",
     icon: Warehouse,
     healthState: "healthy",
     healthScore: 97,
     floors: [
       {
-        floorNumber: 2,
-        floorName: "High-Bay AGV Racks & Automated Stacking",
-        deptName: "AGV Fleet & High-Density Storage",
+        floorNumber: 1,
+        floorName: "AGV Stacking & Picking Bay",
+        deptName: "High-Density Logistics",
         healthState: "healthy",
-        healthScore: 98,
+        healthScore: 97,
         metrics: [
           { label: "SKUs Managed", value: "128,000 SKUs" },
-          { label: "Sorting Precision", value: "99.1%" },
-          { label: "AGV Fleet Health", value: "98.4% Active" },
+          { label: "Picking Speed", value: "1.2s / Item" },
         ],
         employees: [
           { id: "e11", name: "Devon Reed", role: "Warehouse Automation Manager", dept: "Logistics Ops", status: "AGV Dispatch Oversight", currentTask: "Optimizing high-bay rack dispatch paths", efficiency: 97 },
@@ -254,9 +214,10 @@ const BUILDINGS_DATA: Record<BuildingId, Building3DDef> = {
   port: {
     id: "port",
     name: "Deepwater Cargo Port",
+    shortLabel: "PORT",
     type: "Maritime Container Terminal",
-    position: [-5, 0, 3],
-    size: [2.4, 3.2, 2.4],
+    position: [-5.5, 0, 3.2],
+    size: [2.5, 3.0, 2.5],
     color: "#e0f7fa",
     roofColor: "#b2edd4",
     windowColor: "#00bcd4",
@@ -266,33 +227,33 @@ const BUILDINGS_DATA: Record<BuildingId, Building3DDef> = {
     healthScore: 96,
     floors: [
       {
-        floorNumber: 2,
+        floorNumber: 1,
         floorName: "Port Control & Crane Command Tower",
-        deptName: "Maritime Dispatch & Gantry Scheduling",
+        deptName: "Maritime Dispatch",
         healthState: "healthy",
-        healthScore: 97,
+        healthScore: 96,
         metrics: [
           { label: "Cargo Ships Serviced", value: "18 Vessels / Wk" },
           { label: "Gantry Lift Speed", value: "45 Lifts / hr" },
-          { label: "Turnaround Time", value: "24m Avg" },
         ],
         employees: [
-          { id: "e14", name: "Captain Luis Mendez", role: "Harbor Operations Master", dept: "Maritime", status: "Berth Management", currentTask: "Docking berth assignment for Cargo Ship Alpha-7", efficiency: 96 },
+          { id: "e14", name: "Captain Luis Mendez", role: "Harbor Operations Master", dept: "Maritime", status: "Berth Management", currentTask: "Docking berth assignment", efficiency: 96 },
         ],
         machines: [
           { id: "m7", name: "Automated Gantry Crane #2", type: "Post-Panamax Container Crane", health: 96, temperature: 44, powerDraw: 310, vibration: 0.06, maintenanceDueDays: 20, failureProbability: 0.5, aiRecommendation: "Gantry winch cable tension verified nominal." },
         ],
         aiAgentsCount: 9,
-        maintenanceStatus: "Gantry Crane #2 Inspection Complete",
+        maintenanceStatus: "Gantry Crane #2 Inspection Clear",
       },
     ],
   },
   airport: {
     id: "airport",
     name: "Global Cargo Air Hub",
+    shortLabel: "AIRPORT",
     type: "International Freight Runway",
-    position: [5, 0, 3],
-    size: [2.6, 2.8, 3.5],
+    position: [5.5, 0, 3.8],
+    size: [2.6, 2.8, 3.2],
     color: "#e1f5fe",
     roofColor: "#b3e5fc",
     windowColor: "#0288d1",
@@ -302,17 +263,17 @@ const BUILDINGS_DATA: Record<BuildingId, Building3DDef> = {
     healthScore: 98,
     floors: [
       {
-        floorNumber: 2,
-        floorName: "Air Traffic Control Tower",
-        deptName: "Aviation Dispatch & Flight Radar",
+        floorNumber: 1,
+        floorName: "Air Freight Radar Tower",
+        deptName: "Avionics Dispatch",
         healthState: "healthy",
-        healthScore: 99,
+        healthScore: 98,
         metrics: [
           { label: "Daily Air Freight", value: "340 Tons / Day" },
           { label: "On-Time Flights", value: "99.8%" },
         ],
         employees: [
-          { id: "e17", name: "Kaitlyn Ross", role: "Air Freight Chief Controller", dept: "Aviation Ops", status: "Dispatching Flight C-809", currentTask: "High-priority pharmaceutical cargo flight clearance", efficiency: 99 },
+          { id: "e17", name: "Kaitlyn Ross", role: "Air Freight Controller", dept: "Aviation Ops", status: "Flight Clearance", currentTask: "Air cargo flight clearance", efficiency: 99 },
         ],
         machines: [
           { id: "m8", name: "Primary Radar Transceiver", type: "Phased Array Avionics Radar", health: 99, temperature: 32, powerDraw: 90, vibration: 0.01, maintenanceDueDays: 60, failureProbability: 0.1, aiRecommendation: "Radar signal beamforming at 100% gain." },
@@ -325,9 +286,10 @@ const BUILDINGS_DATA: Record<BuildingId, Building3DDef> = {
   solar: {
     id: "solar",
     name: "Solar Array B-4",
+    shortLabel: "SOLAR",
     type: "Photovoltaic Solar Farm",
-    position: [-2, 0, 5],
-    size: [2.4, 2.0, 2.4],
+    position: [-1.8, 0, 5.2],
+    size: [2.2, 1.8, 2.2],
     color: "#fffde7",
     roofColor: "#fff9c4",
     windowColor: "#fbc02d",
@@ -338,19 +300,19 @@ const BUILDINGS_DATA: Record<BuildingId, Building3DDef> = {
     floors: [
       {
         floorNumber: 1,
-        floorName: "Sun-Tracking Inverter Control Substation",
-        deptName: "Photovoltaic Inverter & Battery Storage",
+        floorName: "Solar Substation",
+        deptName: "PV Harvesting",
         healthState: "healthy",
         healthScore: 98,
         metrics: [
-          { label: "Power Generation", value: "480 MW Peak" },
-          { label: "Inverter Efficiency", value: "98.7%" },
+          { label: "Power Output", value: "480 MW Peak" },
+          { label: "Harvest Yield", value: "98.7%" },
         ],
         employees: [
-          { id: "e19", name: "Chen Wei", role: "Solar Array Specialist", dept: "Renewables", status: "Calibrating Actuators", currentTask: "Sun-tracking motor pitch adjustment", efficiency: 98 },
+          { id: "e19", name: "Chen Wei", role: "Solar Array Specialist", dept: "Renewables", status: "Actuator Calibration", currentTask: "Sun-tracking pitch adjustment", efficiency: 98 },
         ],
         machines: [
-          { id: "m9", name: "PV Central Inverter Array", type: "3-Phase Power Inverter", health: 98, temperature: 42, powerDraw: 480, vibration: 0.02, maintenanceDueDays: 40, failureProbability: 0.2, aiRecommendation: "Solar harvest efficiency peak." },
+          { id: "m9", name: "PV Central Inverter Array", type: "3-Phase Inverter", health: 98, temperature: 42, powerDraw: 480, vibration: 0.02, maintenanceDueDays: 40, failureProbability: 0.2, aiRecommendation: "Solar harvest efficiency peak." },
         ],
         aiAgentsCount: 4,
         maintenanceStatus: "Panel Auto-Cleaning Cycle Complete",
@@ -360,9 +322,10 @@ const BUILDINGS_DATA: Record<BuildingId, Building3DDef> = {
   wind: {
     id: "wind",
     name: "Offshore Wind Farm",
+    shortLabel: "WIND",
     type: "Renewable Wind Turbines",
-    position: [-6, 0, -4],
-    size: [2.2, 4.2, 2.2],
+    position: [-6.5, 0, -4.2],
+    size: [2.0, 4.0, 2.0],
     color: "#e0f7fa",
     roofColor: "#b2ebf2",
     windowColor: "#00acc1",
@@ -373,19 +336,19 @@ const BUILDINGS_DATA: Record<BuildingId, Building3DDef> = {
     floors: [
       {
         floorNumber: 1,
-        floorName: "Turbine Pitch & Yaw Telemetry",
-        deptName: "Offshore Wind Power Control",
+        floorName: "Turbine Telemetry Control",
+        deptName: "Offshore Power",
         healthState: "healthy",
         healthScore: 98,
         metrics: [
-          { label: "Offshore Power", value: "620 MW Baseline" },
+          { label: "Offshore Output", value: "620 MW Baseline" },
           { label: "Wind Speed", value: "28 knots" },
         ],
         employees: [
-          { id: "e21", name: "Lars Lindqvist", role: "Wind Field Lead", dept: "Offshore Energy", status: "Remote Yaw Tuning", currentTask: "Turbine #12 pitch alignment", efficiency: 97 },
+          { id: "e21", name: "Lars Lindqvist", role: "Wind Field Lead", dept: "Offshore Energy", status: "Yaw Tuning", currentTask: "Turbine #12 pitch alignment", efficiency: 97 },
         ],
         machines: [
-          { id: "m10", name: "Offshore Wind Turbine #12", type: "12 MW Direct-Drive Turbine", health: 98, temperature: 35, powerDraw: 620, vibration: 0.05, maintenanceDueDays: 50, failureProbability: 0.3, aiRecommendation: "Rotor yaw angle perfectly aligned with wind vector." },
+          { id: "m10", name: "Offshore Wind Turbine #12", type: "12 MW Direct-Drive Turbine", health: 98, temperature: 35, powerDraw: 620, vibration: 0.05, maintenanceDueDays: 50, failureProbability: 0.3, aiRecommendation: "Rotor yaw angle perfectly aligned." },
         ],
         aiAgentsCount: 5,
         maintenanceStatus: "Rotor Blade Inspection Clear",
@@ -395,32 +358,33 @@ const BUILDINGS_DATA: Record<BuildingId, Building3DDef> = {
   distribution: {
     id: "distribution",
     name: "Global Transport Hub",
+    shortLabel: "DISTRIBUTION",
     type: "Express Freight Dispatch",
-    position: [4, 0, 4],
-    size: [2.4, 3.0, 2.4],
-    color: "#f3e5f5",
-    roofColor: "#e1bee7",
-    windowColor: "#ab47bc",
-    accentColor: "#a855f7",
+    position: [0.2, 0, 4.8],
+    size: [2.6, 3.0, 2.6],
+    color: "#f3e8ff",
+    roofColor: "#e9d5ff",
+    windowColor: "#a855f7",
+    accentColor: "#9333ea",
     icon: Truck,
     healthState: "healthy",
     healthScore: 94,
     floors: [
       {
         floorNumber: 1,
-        floorName: "EV Dispatch & Route Control",
-        deptName: "Fleet Telematics & Route AI",
+        floorName: "EV Fleet Dispatch Center",
+        deptName: "Telematics & Route AI",
         healthState: "healthy",
-        healthScore: 95,
+        healthScore: 94,
         metrics: [
           { label: "Dispatched Trucks", value: "2,400 Active" },
-          { label: "EV Fleet Charging", value: "100% Online" },
+          { label: "Fleet Charge", value: "100% Online" },
         ],
         employees: [
-          { id: "e23", name: "Sofia Rossi", role: "Fleet Route Strategist", dept: "Logistics Ops", status: "AI Route Optimization", currentTask: "Rerouting 40 trucks around highway maintenance", efficiency: 96 },
+          { id: "e23", name: "Sofia Rossi", role: "Fleet Strategist", dept: "Logistics Ops", status: "Route Optimization", currentTask: "Rerouting 40 trucks around maintenance", efficiency: 96 },
         ],
         machines: [
-          { id: "m11", name: "Fleet Route Optimizer AI", type: "Edge GPS Telematics Processor", health: 96, temperature: 37, powerDraw: 65, vibration: 0.01, maintenanceDueDays: 90, failureProbability: 0.1, aiRecommendation: "Route optimization saving $140k/week." },
+          { id: "m11", name: "Fleet Route Optimizer AI", type: "Edge GPS Processor", health: 96, temperature: 37, powerDraw: 65, vibration: 0.01, maintenanceDueDays: 90, failureProbability: 0.1, aiRecommendation: "Route optimization saving $140k/week." },
         ],
         aiAgentsCount: 11,
         maintenanceStatus: "GPS Telematics Link Online",
@@ -430,21 +394,22 @@ const BUILDINGS_DATA: Record<BuildingId, Building3DDef> = {
   power: {
     id: "power",
     name: "Clean Energy Power Grid",
-    type: "Power Generation Mainstation",
-    position: [-4, 0, -6],
+    shortLabel: "POWER",
+    type: "Main Generation Substation",
+    position: [-4.2, 0, -6.0],
     size: [2.2, 3.5, 2.2],
-    color: "#e8f5e9",
-    roofColor: "#c8e6c9",
-    windowColor: "#4caf50",
-    accentColor: "#10b981",
+    color: "#dcfce7",
+    roofColor: "#bbf7d0",
+    windowColor: "#22c55e",
+    accentColor: "#16a34a",
     icon: Zap,
     healthState: "healthy",
     healthScore: 99,
     floors: [
       {
         floorNumber: 1,
-        floorName: "Master Grid Load Balancing Operations",
-        deptName: "High-Voltage Microgrid Dispatch",
+        floorName: "Master Load Balancing Substation",
+        deptName: "High-Voltage Microgrid",
         healthState: "healthy",
         healthScore: 99,
         metrics: [
@@ -452,10 +417,10 @@ const BUILDINGS_DATA: Record<BuildingId, Building3DDef> = {
           { label: "Grid Uptime", value: "99.99%" },
         ],
         employees: [
-          { id: "e25", name: "Elena Rostova", role: "Chief Energy Architect", dept: "Renewables", status: "Grid Load Balancing", currentTask: "Discharging battery array B-4 to balance factory load", efficiency: 99 },
+          { id: "e25", name: "Elena Rostova", role: "Chief Energy Architect", dept: "Renewables", status: "Load Balancing", currentTask: "Discharging battery array B-4", efficiency: 99 },
         ],
         machines: [
-          { id: "m12", name: "Master High-Voltage Transformer B", type: "Oil-Immersed Step-Down Transformer", health: 99, temperature: 48, powerDraw: 1250, vibration: 0.03, maintenanceDueDays: 120, failureProbability: 0.05, aiRecommendation: "Transformer oil temperature normal." },
+          { id: "m12", name: "Master High-Voltage Transformer B", type: "Step-Down Transformer", health: 99, temperature: 48, powerDraw: 1250, vibration: 0.03, maintenanceDueDays: 120, failureProbability: 0.05, aiRecommendation: "Transformer oil temperature normal." },
         ],
         aiAgentsCount: 10,
         maintenanceStatus: "Master Grid Switchgear Nominal",
@@ -465,10 +430,10 @@ const BUILDINGS_DATA: Record<BuildingId, Building3DDef> = {
 };
 
 // ==========================================
-// 2. LOW-POLY R3F 3D DIORAMA COMPONENTS
+// 2. DETAILED 3D DIORAMA COMPONENTS
 // ==========================================
 
-// Low-poly Building Mesh Component
+// Low-poly Building Mesh Component with Floating 3D Label
 function Building3D({
   def,
   isSelected,
@@ -484,6 +449,26 @@ function Building3D({
 
   return (
     <group position={def.position}>
+      {/* Floating 3D Name Badge Label */}
+      <Html position={[0, h + 0.8, 0]} center distanceFactor={14}>
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            const worldPos = new THREE.Vector3();
+            meshRef.current?.getWorldPosition(worldPos);
+            onSelect(def, worldPos);
+          }}
+          className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider shadow-lg backdrop-blur-md transition-all cursor-pointer pointer-events-auto hover:scale-110 ${
+            isSelected
+              ? "border-cyan-400 bg-cyan-600 text-white shadow-cyan-500/50 scale-105"
+              : "border-slate-300 bg-white/95 text-slate-800 hover:border-cyan-400"
+          }`}
+        >
+          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: def.accentColor }} />
+          <span>{def.shortLabel}</span>
+        </div>
+      </Html>
+
       {/* Building Base Body */}
       <mesh
         ref={meshRef}
@@ -504,7 +489,7 @@ function Building3D({
         <meshStandardMaterial
           color={hovered || isSelected ? def.accentColor : def.color}
           flatShading
-          roughness={0.35}
+          roughness={0.3}
           metalness={0.1}
         />
       </mesh>
@@ -512,27 +497,31 @@ function Building3D({
       {/* Flat Window Strips */}
       {Array.from({ length: Math.floor(h) }).map((_, row) => (
         <mesh key={row} position={[0, 0.6 + row * 0.9, d / 2 + 0.02]}>
-          <planeGeometry args={[w * 0.72, 0.38]} />
+          <planeGeometry args={[w * 0.75, 0.38]} />
           <meshBasicMaterial color={def.windowColor} />
         </mesh>
       ))}
 
-      {/* Roof Cap */}
+      {/* Roof Cap & Rooftop HVAC Unit */}
       <mesh position={[0, h + 0.06, 0]}>
         <boxGeometry args={[w * 1.04, 0.12, d * 1.04]} />
         <meshStandardMaterial color={def.roofColor} flatShading />
       </mesh>
+      <mesh position={[0.3, h + 0.2, 0.2]}>
+        <boxGeometry args={[0.5, 0.25, 0.5]} />
+        <meshStandardMaterial color="#94a3b8" flatShading />
+      </mesh>
 
-      {/* Factory Animated Chimneys & Smoke Puffs */}
+      {/* Chimney for Factory */}
       {def.id === "factory" && (
-        <group position={[0.6, h + 0.5, -0.5]}>
+        <group position={[0.7, h + 0.5, -0.6]}>
           <mesh>
-            <cylinderGeometry args={[0.2, 0.25, 0.9, 8]} />
+            <cylinderGeometry args={[0.2, 0.25, 1.0, 8]} />
             <meshStandardMaterial color="#64748b" flatShading />
           </mesh>
-          <mesh position={[0, 0.6, 0]}>
-            <sphereGeometry args={[0.3, 8, 8]} />
-            <meshStandardMaterial color="#f1f5f9" opacity={0.6} transparent />
+          <mesh position={[0, 0.7, 0]}>
+            <sphereGeometry args={[0.28, 8, 8]} />
+            <meshStandardMaterial color="#ffffff" opacity={0.7} transparent />
           </mesh>
         </group>
       )}
@@ -540,7 +529,7 @@ function Building3D({
   );
 }
 
-// Low-poly Tree Component
+// Low-poly Trees
 function Tree3D({ position }: { position: [number, number, number] }) {
   return (
     <group position={position}>
@@ -562,7 +551,7 @@ function WindTurbine3D({ position }: { position: [number, number, number] }) {
 
   useFrame((_, delta) => {
     if (bladesRef.current) {
-      bladesRef.current.rotation.z += delta * 2.8;
+      bladesRef.current.rotation.z += delta * 2.2;
     }
   });
 
@@ -592,23 +581,23 @@ function WindTurbine3D({ position }: { position: [number, number, number] }) {
 function SolarPanel3D({ position }: { position: [number, number, number] }) {
   return (
     <group position={position}>
-      <mesh position={[0, 0.2, 0]} rotation={[0.4, 0, 0]}>
-        <boxGeometry args={[0.8, 0.05, 0.6]} />
+      <mesh position={[0, 0.25, 0]} rotation={[0.4, 0, 0]}>
+        <boxGeometry args={[0.9, 0.05, 0.65]} />
         <meshStandardMaterial color="#1e3a8a" flatShading />
       </mesh>
-      <mesh position={[0, 0.1, 0]}>
-        <cylinderGeometry args={[0.04, 0.04, 0.2, 6]} />
+      <mesh position={[0, 0.12, 0]}>
+        <cylinderGeometry args={[0.04, 0.04, 0.24, 6]} />
         <meshStandardMaterial color="#64748b" flatShading />
       </mesh>
     </group>
   );
 }
 
-// Animated Moving Vehicle
+// Realistic Smooth Vehicles (Slowed Down Pace, No Building Clipping)
 function Vehicle3D({
   path,
   color = "#ff5a5a",
-  speed = 0.15,
+  speed = 0.06,
 }: {
   path: THREE.Vector3[];
   color?: string;
@@ -632,11 +621,11 @@ function Vehicle3D({
   return (
     <group ref={ref}>
       <mesh>
-        <boxGeometry args={[0.4, 0.22, 0.2]} />
+        <boxGeometry args={[0.42, 0.22, 0.22]} />
         <meshStandardMaterial color={color} flatShading />
       </mesh>
       <mesh position={[0, 0.16, 0]}>
-        <boxGeometry args={[0.22, 0.14, 0.18]} />
+        <boxGeometry args={[0.24, 0.14, 0.18]} />
         <meshStandardMaterial color="#ffffff" flatShading />
       </mesh>
     </group>
@@ -646,7 +635,7 @@ function Vehicle3D({
 // Cargo Ship
 function CargoShip3D({
   path,
-  speed = 0.08,
+  speed = 0.04,
 }: {
   path: THREE.Vector3[];
   speed?: number;
@@ -669,44 +658,72 @@ function CargoShip3D({
   return (
     <group ref={ref}>
       <mesh>
-        <boxGeometry args={[1.2, 0.35, 0.5]} />
+        <boxGeometry args={[1.3, 0.35, 0.52]} />
         <meshStandardMaterial color="#0284c7" flatShading />
       </mesh>
       <mesh position={[-0.1, 0.3, 0]}>
-        <boxGeometry args={[0.7, 0.28, 0.4]} />
+        <boxGeometry args={[0.72, 0.28, 0.42]} />
         <meshStandardMaterial color="#f97316" flatShading />
       </mesh>
     </group>
   );
 }
 
-// Ground Platform Base
+// Detailed Ground Platform Base (Matching City Block Reference Image)
 function GroundPlatform3D() {
   return (
     <group>
+      {/* Island Rounded Cylinder Platform */}
       <mesh position={[0, -0.3, 0]}>
-        <cylinderGeometry args={[10.5, 10.5, 0.6, 64]} />
-        <meshStandardMaterial color="#e7e9ec" flatShading />
+        <cylinderGeometry args={[11.2, 11.2, 0.6, 64]} />
+        <meshStandardMaterial color="#e2e8f0" flatShading />
       </mesh>
+      {/* Yellow Rim Base */}
       <mesh position={[0, -0.58, 0]}>
-        <cylinderGeometry args={[10.58, 10.58, 0.18, 64]} />
-        <meshStandardMaterial color="#f2c14e" flatShading />
+        <cylinderGeometry args={[11.28, 11.28, 0.18, 64]} />
+        <meshStandardMaterial color="#f59e0b" flatShading />
+      </mesh>
+
+      {/* Main Asphalt Road Network (#334155) */}
+      <mesh position={[0, -0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[18.5, 2.6]} />
+        <meshStandardMaterial color="#334155" flatShading />
       </mesh>
       <mesh position={[0, -0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[18, 2.4]} />
-        <meshStandardMaterial color="#c9cdd3" flatShading />
+        <planeGeometry args={[2.6, 18.5]} />
+        <meshStandardMaterial color="#334155" flatShading />
       </mesh>
-      <mesh position={[0, -0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[2.4, 18]} />
-        <meshStandardMaterial color="#c9cdd3" flatShading />
+
+      {/* Sidewalk Borders (#cbd5e1) */}
+      <mesh position={[0, -0.003, -1.45]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[18.5, 0.2]} />
+        <meshStandardMaterial color="#cbd5e1" flatShading />
       </mesh>
-      <mesh position={[-7.2, -0.01, 3]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[5.5, 4.5]} />
+      <mesh position={[0, -0.003, 1.45]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[18.5, 0.2]} />
+        <meshStandardMaterial color="#cbd5e1" flatShading />
+      </mesh>
+
+      {/* White Dashed Lane Markings */}
+      {[-8, -6, -4, -2, 2, 4, 6, 8].map((x) => (
+        <mesh key={x} position={[x, 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[0.8, 0.12]} />
+          <meshBasicMaterial color="#ffffff" />
+        </mesh>
+      ))}
+
+      {/* Crosswalk Zebra Stripes */}
+      {[-0.8, -0.4, 0, 0.4, 0.8].map((z) => (
+        <mesh key={z} position={[1.6, 0.003, z]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[0.2, 0.25]} />
+          <meshBasicMaterial color="#ffffff" />
+        </mesh>
+      ))}
+
+      {/* Ocean Water Berth */}
+      <mesh position={[-7.5, -0.01, 3.5]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[6.0, 5.0]} />
         <meshStandardMaterial color="#38bdf8" opacity={0.9} transparent />
-      </mesh>
-      <mesh position={[5.2, 0, 5]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[4.5, 4.5]} />
-        <meshStandardMaterial color="#7ed08a" flatShading />
       </mesh>
     </group>
   );
@@ -726,7 +743,7 @@ function CameraRig3D({ target }: { target: THREE.Vector3 | null }) {
       active.current = true;
       progress.current = 0;
       startPos.current.copy(camera.position);
-      goalPos.current.copy(target).add(new THREE.Vector3(1.6, 1.4, 1.6));
+      goalPos.current.copy(target).add(new THREE.Vector3(1.8, 1.5, 1.8));
     } else if (prevTargetRef.current !== null) {
       active.current = true;
       progress.current = 0;
@@ -780,7 +797,7 @@ export function CompanyWorld({
   const [demoStepText, setDemoStepText] = useState<string>("");
   const [audioEnabled, setAudioEnabled] = useState<boolean>(false);
 
-  // Web Audio Synthesizer Click Feedback (Optional Sound)
+  // Web Audio Synthesizer Click Feedback
   const playClickSound = () => {
     if (!audioEnabled || typeof window === "undefined") return;
     try {
@@ -798,7 +815,7 @@ export function CompanyWorld({
       osc.start();
       osc.stop(ctx.currentTime + 0.08);
     } catch {
-      // Audio fallback
+      // Fallback
     }
   };
 
@@ -870,22 +887,22 @@ export function CompanyWorld({
     executeStep();
   };
 
-  // Road paths for trucks & ships
-  const truckPath = useMemo(
+  // Non-clipping road paths for trucks & ships
+  const truckPath1 = useMemo(
     () => [
-      new THREE.Vector3(-7, 0, 0),
-      new THREE.Vector3(0, 0, -7),
-      new THREE.Vector3(7, 0, 0),
-      new THREE.Vector3(0, 0, 7),
+      new THREE.Vector3(-7.5, 0, 0),
+      new THREE.Vector3(0, 0, -7.5),
+      new THREE.Vector3(7.5, 0, 0),
+      new THREE.Vector3(0, 0, 7.5),
     ],
     []
   );
 
   const shipPath = useMemo(
     () => [
-      new THREE.Vector3(-8, 0, 1),
-      new THREE.Vector3(-6, 0, 5),
-      new THREE.Vector3(-8, 0, 4),
+      new THREE.Vector3(-8.5, 0, 1.5),
+      new THREE.Vector3(-6.5, 0, 5.5),
+      new THREE.Vector3(-8.5, 0, 4.5),
     ],
     []
   );
@@ -894,10 +911,10 @@ export function CompanyWorld({
 
   if (!isMounted) {
     return (
-      <div className="relative flex h-[640px] w-full items-center justify-center rounded-[2rem] border border-cyan-500/20 bg-slate-950 p-6 text-cyan-300">
+      <div className="relative flex h-[640px] w-full items-center justify-center rounded-[2rem] border border-slate-200 bg-white p-6 text-slate-800 dark:border-white/10 dark:bg-slate-950 dark:text-cyan-300">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-cyan-400 border-t-transparent shadow-[0_0_15px_rgba(34,211,238,0.6)]" />
-          <span className="font-mono text-xs font-bold uppercase tracking-wider text-cyan-400">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-cyan-500 border-t-transparent" />
+          <span className="font-mono text-xs font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-400">
             Loading 3D Digital Twin Engine...
           </span>
         </div>
@@ -906,17 +923,17 @@ export function CompanyWorld({
   }
 
   return (
-    <section className="relative min-h-[680px] overflow-hidden rounded-[2rem] border border-cyan-500/20 bg-slate-950/90 p-4 shadow-2xl backdrop-blur-2xl sm:p-6">
+    <section className="relative min-h-[680px] overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/90 p-4 shadow-xl backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/90 sm:p-6">
       {/* Top Main Navigation Header */}
-      <div className="relative z-20 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
+      <div className="relative z-20 flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/80 pb-4 dark:border-white/10">
         <div>
           <div className="flex items-center gap-2">
-            <span className="flex h-2.5 w-2.5 rounded-full bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.9)] animate-pulse" />
-            <span className="text-xs font-mono font-bold uppercase tracking-widest text-cyan-400">
+            <span className="flex h-2.5 w-2.5 rounded-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.8)] animate-pulse" />
+            <span className="text-xs font-mono font-bold uppercase tracking-widest text-cyan-600 dark:text-cyan-400">
               3D Digital Twin Ecosystem 2.0 • Parallel OS
             </span>
           </div>
-          <h2 className="mt-1 text-2xl font-extrabold text-white sm:text-3xl tracking-tight">
+          <h2 className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-white sm:text-3xl tracking-tight">
             Company World
           </h2>
         </div>
@@ -927,13 +944,13 @@ export function CompanyWorld({
           <button
             onClick={runJudgeDemo}
             disabled={isDemoRunning}
-            className={`flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-bold transition shadow-lg ${
+            className={`flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-bold transition shadow-md ${
               isDemoRunning
-                ? "border-purple-400 bg-purple-500/30 text-purple-200 shadow-[0_0_20px_rgba(168,85,247,0.4)] animate-pulse"
-                : "border-purple-400/50 bg-purple-500/20 text-purple-300 hover:border-purple-400 hover:bg-purple-500/30"
+                ? "border-purple-400 bg-purple-600 text-white shadow-purple-500/40 animate-pulse"
+                : "border-purple-400/40 bg-purple-500/10 text-purple-700 hover:bg-purple-500/20 dark:border-purple-400/50 dark:bg-purple-500/20 dark:text-purple-300"
             }`}
           >
-            <Sparkles className="h-3.5 w-3.5 text-purple-400" />
+            <Sparkles className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
             <span>{isDemoRunning ? "Demo Sequence Running..." : "Run Demo"}</span>
           </button>
 
@@ -943,10 +960,10 @@ export function CompanyWorld({
               playClickSound();
               setIsSimulating(!isSimulating);
             }}
-            className={`flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-bold transition shadow-lg ${
+            className={`flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-bold transition shadow-md ${
               isSimulating
-                ? "border-amber-400 bg-amber-500 text-slate-950 shadow-[0_0_20px_rgba(245,158,11,0.5)] animate-pulse"
-                : "border-cyan-400/40 bg-cyan-500/20 text-cyan-200 hover:border-cyan-400 hover:bg-cyan-500/30"
+                ? "border-amber-400 bg-amber-500 text-slate-950 shadow-amber-500/40 animate-pulse"
+                : "border-cyan-400/40 bg-cyan-500/10 text-cyan-700 hover:bg-cyan-500/20 dark:border-cyan-400/40 dark:bg-cyan-500/20 dark:text-cyan-200"
             }`}
           >
             <Play className={`h-3.5 w-3.5 ${isSimulating ? "animate-spin" : "fill-current"}`} />
@@ -956,10 +973,10 @@ export function CompanyWorld({
           {/* Audio Synthesizer Sound Toggle */}
           <button
             onClick={() => setAudioEnabled(!audioEnabled)}
-            className={`rounded-full border p-2 text-slate-300 transition ${
+            className={`rounded-full border p-2 transition shadow-xs ${
               audioEnabled
-                ? "border-cyan-400 bg-cyan-500/20 text-cyan-300 shadow-[0_0_10px_rgba(34,211,238,0.4)]"
-                : "border-white/15 bg-black/40 text-slate-400 hover:bg-white/10"
+                ? "border-cyan-400 bg-cyan-500/20 text-cyan-600 dark:text-cyan-300"
+                : "border-slate-200 bg-slate-100 text-slate-600 dark:border-white/15 dark:bg-slate-800 dark:text-slate-400"
             }`}
             title="Toggle Synthesizer Sound"
           >
@@ -975,13 +992,13 @@ export function CompanyWorld({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="relative z-20 mt-3 flex items-center justify-between rounded-2xl border border-purple-400/60 bg-purple-950/70 p-3 text-xs font-mono font-bold text-purple-200 shadow-xl backdrop-blur-md"
+            className="relative z-20 mt-3 flex items-center justify-between rounded-2xl border border-purple-400/60 bg-purple-900/90 p-3 text-xs font-mono font-bold text-purple-100 shadow-xl backdrop-blur-md"
           >
             <div className="flex items-center gap-2">
-              <Radio className="h-4 w-4 animate-spin text-purple-400" />
+              <Radio className="h-4 w-4 animate-spin text-purple-300" />
               <span>JUDGE DEMO MODE: {demoStepText}</span>
             </div>
-            <span className="rounded-full bg-purple-500/30 px-3 py-1 text-[10px] text-purple-300">
+            <span className="rounded-full bg-purple-500/30 px-3 py-1 text-[10px] text-purple-200">
               Automated Walkthrough
             </span>
           </motion.div>
@@ -990,7 +1007,7 @@ export function CompanyWorld({
 
       {/* 3D Toy Diorama Scene Stage */}
       {!selectedBuildingId ? (
-        <div className="relative mt-4 h-[580px] w-full overflow-hidden rounded-3xl border border-sky-300/40 bg-[#bfe3ff] shadow-inner">
+        <div className="relative mt-4 h-[580px] w-full overflow-hidden rounded-3xl border border-sky-300/50 bg-[#bfe3ff] shadow-inner">
           {/* Quick Search & Bookmark Toolbar */}
           <div className="absolute top-4 left-4 z-20 flex flex-wrap items-center gap-3 right-4 justify-between">
             {/* Quick Building Search */}
@@ -1001,7 +1018,7 @@ export function CompanyWorld({
                 placeholder="Search building node..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-52 rounded-xl border border-white/80 bg-white/90 py-1.5 pl-9 pr-3 text-xs font-semibold text-slate-800 placeholder-slate-500 shadow-md backdrop-blur-md focus:border-sky-500 focus:outline-none"
+                className="w-52 rounded-xl border border-white/80 bg-white/95 py-1.5 pl-9 pr-3 text-xs font-semibold text-slate-800 placeholder-slate-500 shadow-md backdrop-blur-md focus:border-sky-500 focus:outline-none"
               />
               {searchQuery && (
                 <div className="absolute top-9 left-0 right-0 z-30 max-h-40 overflow-y-auto rounded-xl border border-white/80 bg-white/95 p-1.5 shadow-xl text-xs">
@@ -1056,11 +1073,11 @@ export function CompanyWorld({
             shadows={false}
             camera={{ position: [10, 8, 10], fov: 45 }}
             onCreated={({ scene }) => {
-              scene.background = new THREE.Color("#bfe3ff"); // Light sky background
+              scene.background = new THREE.Color("#bfe3ff");
             }}
           >
             <ambientLight intensity={0.95} />
-            <directionalLight position={[10, 12, 8]} intensity={0.85} />
+            <directionalLight position={[10, 14, 8]} intensity={0.85} />
 
             <GroundPlatform3D />
 
@@ -1077,15 +1094,15 @@ export function CompanyWorld({
               <Tree3D key={i} position={[5.2 + i * 0.5, 0, 5.2]} />
             ))}
 
-            <WindTurbine3D position={[-6, 0, -4]} />
-            <WindTurbine3D position={[-7.5, 0, -5.5]} />
+            <WindTurbine3D position={[-6.5, 0, -4.2]} />
+            <WindTurbine3D position={[-8.0, 0, -5.5]} />
 
-            <SolarPanel3D position={[-2, 0, 5]} />
-            <SolarPanel3D position={[-1.2, 0, 5.2]} />
+            <SolarPanel3D position={[-1.8, 0, 5.2]} />
+            <SolarPanel3D position={[-1.0, 0, 5.4]} />
 
-            <Vehicle3D path={truckPath} color="#ff5a5a" speed={isSimulating ? 0.38 : 0.16} />
-            <Vehicle3D path={truckPath.slice().reverse()} color="#3b82f6" speed={isSimulating ? 0.48 : 0.22} />
-            <CargoShip3D path={shipPath} speed={0.06} />
+            <Vehicle3D path={truckPath1} color="#ef4444" speed={isSimulating ? 0.12 : 0.05} />
+            <Vehicle3D path={truckPath1.slice().reverse()} color="#3b82f6" speed={isSimulating ? 0.14 : 0.06} />
+            <CargoShip3D path={shipPath} speed={0.03} />
 
             <CameraRig3D target={zoomTarget} />
             <OrbitControls
@@ -1104,44 +1121,46 @@ export function CompanyWorld({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.97 }}
             transition={{ duration: 0.35 }}
-            className="relative mt-4 flex flex-col rounded-3xl border border-cyan-500/30 bg-slate-950 p-5 shadow-2xl text-slate-100 min-h-[580px]"
+            className="relative mt-4 flex flex-col rounded-3xl border border-slate-200 bg-white p-5 shadow-2xl dark:border-white/10 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-[580px]"
           >
-            {/* Top Handoff & Breadcrumb Navigation */}
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
+            {/* Top Handoff Navigation */}
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-white/10 pb-4">
               <div className="flex items-center gap-3">
                 <button
                   onClick={handleReturnToWorld}
-                  className="flex items-center gap-2 rounded-xl border border-cyan-400/40 bg-cyan-500/20 px-3.5 py-2 text-xs font-bold text-cyan-200 transition hover:border-cyan-400 hover:bg-cyan-500/30 hover:text-white shadow-md"
+                  className="flex items-center gap-2 rounded-xl border border-slate-300 bg-slate-100 px-3.5 py-2 text-xs font-bold text-slate-800 hover:bg-slate-200 dark:border-cyan-400/40 dark:bg-cyan-500/20 dark:text-cyan-200 dark:hover:bg-cyan-500/30 transition shadow-xs"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   <span>Back to 3D Company World</span>
                 </button>
 
-                <div className="h-6 w-[1px] bg-white/10" />
+                <div className="h-6 w-[1px] bg-slate-200 dark:bg-white/10" />
 
                 {/* Breadcrumbs */}
                 <div className="flex items-center gap-2 text-xs font-mono">
-                  <span className="text-slate-400">3D World</span>
-                  <ChevronRight className="h-3.5 w-3.5 text-slate-600" />
-                  <span className="text-cyan-400 font-bold">{selectedDef.name}</span>
+                  <span className="text-slate-500 dark:text-slate-400">3D World</span>
+                  <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                  <span className="text-cyan-600 dark:text-cyan-400 font-bold">{selectedDef.name}</span>
                   {viewLevel === "machine" && selectedMachine && (
                     <>
-                      <ChevronRight className="h-3.5 w-3.5 text-slate-600" />
-                      <span className="text-amber-400 font-bold">{selectedMachine.name}</span>
+                      <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                      <span className="text-amber-600 dark:text-amber-400 font-bold">{selectedMachine.name}</span>
                     </>
                   )}
                 </div>
               </div>
 
               {/* View Level Tabs */}
-              <div className="flex rounded-xl border border-white/15 bg-black/40 p-1 text-xs font-semibold">
+              <div className="flex rounded-xl border border-slate-200 bg-slate-100 p-1 text-xs font-semibold dark:border-white/15 dark:bg-slate-900">
                 <button
                   onClick={() => {
                     setViewLevel("floor");
                     setSelectedMachine(null);
                   }}
                   className={`rounded-lg px-3 py-1.5 transition ${
-                    viewLevel === "floor" ? "bg-cyan-500/20 text-cyan-300" : "text-slate-400 hover:text-white"
+                    viewLevel === "floor"
+                      ? "bg-cyan-600 text-white shadow-xs"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                   }`}
                 >
                   Floor Interior
@@ -1150,7 +1169,9 @@ export function CompanyWorld({
                   <button
                     onClick={() => setViewLevel("machine")}
                     className={`rounded-lg px-3 py-1.5 transition ${
-                      viewLevel === "machine" ? "bg-amber-500/20 text-amber-300" : "text-slate-400 hover:text-white"
+                      viewLevel === "machine"
+                        ? "bg-amber-600 text-white shadow-xs"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                     }`}
                   >
                     Machine Telemetry
@@ -1159,46 +1180,43 @@ export function CompanyWorld({
               </div>
             </div>
 
-            {/* View Level 1: Building Floors & Interior */}
+            {/* View Level 1: Building Floor Interior */}
             {viewLevel === "floor" && (
               <div className="mt-5 grid grid-cols-1 gap-6 overflow-y-auto max-h-[480px] pr-2">
                 {selectedDef.floors.map((floor) => (
                   <div
                     key={floor.floorNumber}
-                    className="rounded-2xl border border-cyan-500/20 bg-slate-900/90 p-5 shadow-xl backdrop-blur-md"
+                    className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5 shadow-sm dark:border-cyan-500/20 dark:bg-slate-900/90 backdrop-blur-md"
                   >
-                    {/* Floor Header */}
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3">
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-white/10">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/20 text-cyan-300 font-mono font-extrabold border border-cyan-400/40">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-700 font-mono font-extrabold border border-cyan-500/30 dark:bg-cyan-500/20 dark:text-cyan-300">
                           F{floor.floorNumber}
                         </div>
                         <div>
-                          <h4 className="text-base font-bold text-white">{floor.floorName}</h4>
-                          <p className="text-xs text-slate-400 font-mono">{floor.deptName}</p>
+                          <h4 className="text-base font-bold text-slate-900 dark:text-white">{floor.floorName}</h4>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">{floor.deptName}</p>
                         </div>
                       </div>
 
-                      <span className="flex items-center gap-1.5 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-400">
+                      <span className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-400">
                         <CheckCircle2 className="h-3.5 w-3.5" />
                         Floor Health: {floor.healthScore}%
                       </span>
                     </div>
 
-                    {/* Floor Live Metrics */}
                     <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
                       {floor.metrics.map((m, mIdx) => (
-                        <div key={mIdx} className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                          <span className="text-[11px] text-slate-400 block">{m.label}</span>
-                          <strong className="mt-1 text-sm font-bold text-cyan-300 block">{m.value}</strong>
+                        <div key={mIdx} className="rounded-xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-white/[0.03]">
+                          <span className="text-[11px] text-slate-500 dark:text-slate-400 block">{m.label}</span>
+                          <strong className="mt-1 text-sm font-bold text-cyan-700 dark:text-cyan-300 block">{m.value}</strong>
                         </div>
                       ))}
                     </div>
 
-                    {/* Machines / Production Equipment List */}
                     {floor.machines.length > 0 && (
                       <div className="mt-4 space-y-2">
-                        <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400 block">
+                        <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
                           Floor Production Equipment & Telemetry ({floor.machines.length} Active Machines)
                         </span>
                         <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
@@ -1210,102 +1228,82 @@ export function CompanyWorld({
                                 setSelectedMachine(mac);
                                 setViewLevel("machine");
                               }}
-                              className="flex items-center justify-between cursor-pointer rounded-xl border border-white/10 bg-white/5 p-3 transition hover:border-amber-400/50 hover:bg-white/10"
+                              className="flex items-center justify-between cursor-pointer rounded-xl border border-slate-200 bg-white p-3 transition hover:border-amber-400 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
                             >
                               <div className="flex items-center gap-3">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/20 text-amber-400 border border-amber-400/40">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/30 dark:bg-amber-500/20 dark:text-amber-400">
                                   <Wrench className="h-4 w-4" />
                                 </div>
                                 <div>
-                                  <span className="text-xs font-bold text-white block">{mac.name}</span>
-                                  <span className="text-[11px] text-slate-400 block">{mac.type}</span>
+                                  <span className="text-xs font-bold text-slate-900 dark:text-white block">{mac.name}</span>
+                                  <span className="text-[11px] text-slate-500 dark:text-slate-400 block">{mac.type}</span>
                                 </div>
                               </div>
 
                               <div className="text-right">
-                                <span className={`text-[11px] font-mono font-bold ${mac.health < 85 ? "text-amber-400" : "text-emerald-400"}`}>
+                                <span className={`text-[11px] font-mono font-bold ${mac.health < 85 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400"}`}>
                                   Health {mac.health}%
                                 </span>
-                                <span className="text-[10px] text-slate-400 block">Temp: {mac.temperature}°C</span>
+                                <span className="text-[10px] text-slate-500 dark:text-slate-400 block">Temp: {mac.temperature}°C</span>
                               </div>
                             </div>
                           ))}
                         </div>
                       </div>
                     )}
-
-                    {/* Employees Roster */}
-                    <div className="mt-4 space-y-2">
-                      <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400 block">
-                        Floor Staff ({floor.employees.length} Personnel)
-                      </span>
-                      <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                        {floor.employees.map((emp) => (
-                          <div key={emp.id} className="rounded-xl border border-white/10 bg-white/5 p-2.5 text-xs flex justify-between items-center">
-                            <div className="flex items-center gap-2">
-                              <User className="h-3.5 w-3.5 text-cyan-400" />
-                              <span className="font-bold text-white">{emp.name}</span>
-                            </div>
-                            <span className="text-slate-400 text-[11px]">{emp.role}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
                   </div>
                 ))}
               </div>
             )}
 
-            {/* View Level 2: Machine Deep Telemetry & Maintenance Inspection */}
+            {/* View Level 2: Machine Deep Telemetry */}
             {viewLevel === "machine" && selectedMachine && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="mt-5 space-y-4 overflow-y-auto max-h-[480px] pr-2"
               >
-                <div className="rounded-2xl border border-amber-400/40 bg-amber-950/20 p-5 backdrop-blur-md">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <div className="rounded-2xl border border-amber-400/40 bg-amber-500/5 p-5 dark:bg-amber-950/20 backdrop-blur-md">
+                  <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/20 text-amber-300 border border-amber-400/40">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-400/40">
                         <Wrench className="h-5 w-5" />
                       </div>
                       <div>
-                        <h4 className="text-lg font-bold text-white">{selectedMachine.name}</h4>
-                        <p className="text-xs font-mono text-amber-300">{selectedMachine.type}</p>
+                        <h4 className="text-lg font-bold text-slate-900 dark:text-white">{selectedMachine.name}</h4>
+                        <p className="text-xs font-mono text-amber-700 dark:text-amber-300">{selectedMachine.type}</p>
                       </div>
                     </div>
 
-                    <span className="rounded-full border border-amber-400/50 bg-amber-500/20 px-3 py-1 text-xs font-bold text-amber-300">
+                    <span className="rounded-full border border-amber-400/50 bg-amber-500/20 px-3 py-1 text-xs font-bold text-amber-800 dark:text-amber-300">
                       Failure Probability: {selectedMachine.failureProbability}%
                     </span>
                   </div>
 
-                  {/* Telemetry Gauge Grid */}
                   <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-xs">
-                      <span className="text-slate-400">Health Score</span>
-                      <strong className="mt-1 text-sm font-bold text-emerald-400 block">{selectedMachine.health}%</strong>
+                    <div className="rounded-xl border border-slate-200 bg-white p-3 text-xs dark:border-white/10 dark:bg-white/5">
+                      <span className="text-slate-500 dark:text-slate-400">Health Score</span>
+                      <strong className="mt-1 text-sm font-bold text-emerald-600 dark:text-emerald-400 block">{selectedMachine.health}%</strong>
                     </div>
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-xs">
-                      <span className="text-slate-400">Temperature</span>
-                      <strong className="mt-1 text-sm font-bold text-amber-400 block">{selectedMachine.temperature}°C</strong>
+                    <div className="rounded-xl border border-slate-200 bg-white p-3 text-xs dark:border-white/10 dark:bg-white/5">
+                      <span className="text-slate-500 dark:text-slate-400">Temperature</span>
+                      <strong className="mt-1 text-sm font-bold text-amber-600 dark:text-amber-400 block">{selectedMachine.temperature}°C</strong>
                     </div>
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-xs">
-                      <span className="text-slate-400">Power Draw</span>
-                      <strong className="mt-1 text-sm font-bold text-cyan-300 block">{selectedMachine.powerDraw} kW</strong>
+                    <div className="rounded-xl border border-slate-200 bg-white p-3 text-xs dark:border-white/10 dark:bg-white/5">
+                      <span className="text-slate-500 dark:text-slate-400">Power Draw</span>
+                      <strong className="mt-1 text-sm font-bold text-cyan-700 dark:text-cyan-300 block">{selectedMachine.powerDraw} kW</strong>
                     </div>
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-xs">
-                      <span className="text-slate-400">Vibration Level</span>
-                      <strong className="mt-1 text-sm font-bold text-purple-300 block">{selectedMachine.vibration} g</strong>
+                    <div className="rounded-xl border border-slate-200 bg-white p-3 text-xs dark:border-white/10 dark:bg-white/5">
+                      <span className="text-slate-500 dark:text-slate-400">Vibration Level</span>
+                      <strong className="mt-1 text-sm font-bold text-purple-700 dark:text-purple-300 block">{selectedMachine.vibration} g</strong>
                     </div>
                   </div>
 
-                  {/* AI Predictive Maintenance Box */}
-                  <div className="mt-4 rounded-xl border border-amber-400/30 bg-black/40 p-4">
-                    <div className="flex items-center gap-2 text-amber-300 text-xs font-bold">
+                  <div className="mt-4 rounded-xl border border-amber-400/40 bg-white p-4 dark:bg-black/40">
+                    <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300 text-xs font-bold">
                       <Sparkles className="h-4 w-4" /> AI Predictive Maintenance Recommendation
                     </div>
-                    <p className="mt-2 text-xs leading-5 text-slate-200">
+                    <p className="mt-2 text-xs leading-5 text-slate-800 dark:text-slate-200">
                       {selectedMachine.aiRecommendation}
                     </p>
                   </div>
