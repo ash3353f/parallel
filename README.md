@@ -10,7 +10,7 @@ It combines an interactive 3D digital twin, executive analytics, AI-powered simu
 
 ## 🌐 Live Demo
 
-🔗 https://YOUR-VERCEL-LINK.vercel.app
+🔗 https://parallel-io.vercel.app/
 
 ---
 
