@@ -2,13 +2,14 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Sun, Moon, Search, Maximize2, Minimize2 } from "lucide-react";
+import { Sun, Moon, Search, Maximize2, Minimize2, Lock } from "lucide-react";
 
 interface TopbarProps {
   theme: "light" | "dark";
   onToggleTheme: () => void;
   presentationMode: boolean;
   onTogglePresentation: () => void;
+  onLockDemo?: () => void;
   onNavigateSection?: (sectionId: string) => void;
 }
 
@@ -17,6 +18,7 @@ export const Topbar: React.FC<TopbarProps> = ({
   onToggleTheme,
   presentationMode,
   onTogglePresentation,
+  onLockDemo,
   onNavigateSection,
 }) => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -88,6 +90,18 @@ export const Topbar: React.FC<TopbarProps> = ({
           <span className="d" />
           <span className="t">LIVE ENGINE</span>
         </div>
+
+        {/* Dev Reset / Lock Demo Gate Button */}
+        {onLockDemo && (
+          <button
+            onClick={onLockDemo}
+            className="iconbtn"
+            title="Lock Demo & Show Lamp Intro"
+            aria-label="Lock Demo"
+          >
+            <Lock className="h-4 w-4 text-amber-500" />
+          </button>
+        )}
 
         {/* Theme Toggle */}
         <button

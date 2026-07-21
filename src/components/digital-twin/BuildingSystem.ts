@@ -14,12 +14,32 @@ export const PLOT: Record<FacilityId, [number, number, number, number]> = {
 };
 
 export const P = {
+  coral: 0xef7e72,
+  mint: 0x9fe0b8,
+  cream: 0xf0dfa8,
+  sky: 0x9fd0e6,
+  yellow: 0xf4e285,
+  lavender: 0xc3b1e8,
+  roof: 0xf4f1ea,
+  trim: 0x6b7280,
+  base: 0x8a909c,
+  grass: 0x6fcf57,
+  grassDk: 0x57b843,
+  road: 0x6e7480,
+  roadLine: 0xeef2f7,
+  table: 0xe9edf2,
+  sand: 0xe8c766,
+  water: 0x2f86c4,
+  trunk: 0x8a5a3b,
+  leaf: 0x3fb84f,
+  leafDk: 0x2e9e40,
+  metal: 0xb9c2cc,
+  orange: 0xff8a3c,
+  white: 0xffffff,
   plot: PLOT,
-  orange: 0xf59e0b,
-  metal: 0x64748b,
-  leaf: 0x22c55e,
-  leafDk: 0x15803d,
 };
+
+const Y_ROAD = 0.55;
 
 export interface RoadPaths {
   ring: THREE.Vector3[];
@@ -34,43 +54,41 @@ export interface RoadPaths {
 
 export const ROADS: RoadPaths = {
   ring: [
-    new THREE.Vector3(-60, 0.44, -60),
-    new THREE.Vector3(60, 0.44, -60),
-    new THREE.Vector3(60, 0.44, 60),
-    new THREE.Vector3(-60, 0.44, 60),
+    new THREE.Vector3(-61, Y_ROAD, -47),
+    new THREE.Vector3(61, Y_ROAD, -47),
+    new THREE.Vector3(61, Y_ROAD, 47),
+    new THREE.Vector3(-61, Y_ROAD, 47),
   ],
   h1: [
-    new THREE.Vector3(-60, 0.44, 0),
-    new THREE.Vector3(60, 0.44, 0),
+    new THREE.Vector3(-61, Y_ROAD, 0),
+    new THREE.Vector3(61, Y_ROAD, 0),
   ],
   v1: [
-    new THREE.Vector3(0, 0.44, -60),
-    new THREE.Vector3(0, 0.44, 60),
+    new THREE.Vector3(-18, Y_ROAD, -47),
+    new THREE.Vector3(-18, Y_ROAD, 47),
   ],
   fw: [
-    new THREE.Vector3(-40, 0.44, -24),
-    new THREE.Vector3(-40, 0.44, 22),
+    new THREE.Vector3(0, Y_ROAD, 0),
+    new THREE.Vector3(-40, Y_ROAD, 0),
   ],
   logN: [
-    new THREE.Vector3(0, 0.44, -24),
-    new THREE.Vector3(30, 0.44, 0),
-    new THREE.Vector3(30, 0.44, 14),
+    new THREE.Vector3(30, Y_ROAD, 0),
+    new THREE.Vector3(0, Y_ROAD, 0),
   ],
   logA: [
-    new THREE.Vector3(0, 0.44, -24),
-    new THREE.Vector3(60, 0.44, -24),
-    new THREE.Vector3(60, 0.44, 14),
-    new THREE.Vector3(30, 0.44, 14),
+    new THREE.Vector3(30, Y_ROAD, 0),
+    new THREE.Vector3(30, Y_ROAD, 20),
+    new THREE.Vector3(18, Y_ROAD, 20),
+    new THREE.Vector3(18, Y_ROAD, 0),
+    new THREE.Vector3(0, Y_ROAD, 0),
   ],
   dist: [
-    new THREE.Vector3(30, 0.44, 14),
-    new THREE.Vector3(30, 0.44, 34),
+    new THREE.Vector3(18, Y_ROAD, 0),
+    new THREE.Vector3(18, Y_ROAD, 34),
   ],
   fork: [
-    new THREE.Vector3(-36, 0.44, 18),
-    new THREE.Vector3(-44, 0.44, 18),
-    new THREE.Vector3(-44, 0.44, 26),
-    new THREE.Vector3(-36, 0.44, 26),
+    new THREE.Vector3(-28, Y_ROAD, 12),
+    new THREE.Vector3(-28, Y_ROAD, 30),
   ],
 };
 
@@ -101,160 +119,166 @@ export const SPECS: BuildingSpec[] = [
   },
   {
     id: "factory",
-    name: "Apex Factory Compound",
-    color: 0xe6a875,
-    cols: 4,
+    name: "Apex Factory",
+    color: 0xc9cdd4,
+    floors: 2,
+    cols: 6,
     industrial: true,
     data: {
-      sub: "Smart Manufacturing Hub",
+      sub: "Primary Production Site",
       kpis: [
-        ["Line Output", "1,450 u/d"],
-        ["Robotics Load", "82%"],
-        ["Defect Rate", "0.04%"],
-        ["OEE Index", "91.2%"],
+        ["Daily Output", "4,200 u"],
+        ["Efficiency", "94%"],
+        ["Workers", "186"],
+        ["Energy Use", "8.9 MW"],
       ],
       metrics: [
-        ["Conveyor Velocity", "1.4 m/s"],
-        ["Active Workers", "148"],
-        ["BESS Link", "Active"],
+        ["OEE", "88%"],
+        ["Scrap Rate", "1.4%"],
+        ["Active Lines", "4"],
       ],
       risk: "med",
-      rec: "Corridor V2 truck bottleneck is slowing dispatch; consider rerouting via North Express.",
+      rec: "Predictive model flags Cell-03 bearing wear — schedule maintenance in 72h.",
     },
   },
   {
     id: "warehouse",
-    name: "Central Logistics Hub",
-    color: 0x95cfad,
-    cols: 3,
+    name: "Central Warehouse",
+    color: 0xf0dfa8,
+    floors: 1,
+    cols: 5,
     docks: 4,
     data: {
-      sub: "Automated Storage & Fulfillment",
+      sub: "Inventory & Fulfilment",
       kpis: [
-        ["Storage Utilization", "78%"],
-        ["Dock Velocity", "14.2 min"],
-        ["AGV Fleet", "24/24 Active"],
-        ["Dispatch Rate", "98.6%"],
+        ["SKUs", "18,420"],
+        ["Fill Rate", "99.2%"],
+        ["Workers", "94"],
+        ["Energy Use", "1.1 MW"],
       ],
       metrics: [
-        ["Daily Throughput", "2,400 T"],
-        ["Inventory Value", "$18.4M"],
-        ["Climate Control", "Nominal"],
+        ["Capacity", "76%"],
+        ["Inbound/hr", "320"],
+        ["Outbound/hr", "410"],
       ],
       risk: "low",
-      rec: "Storage headroom is optimal; maintain current AGV battery cycling schedule.",
+      rec: "Slot fast-movers nearer to dock B to shave 9% off pick travel.",
     },
   },
   {
     id: "logistics",
-    name: "Express Delivery Hub",
-    color: 0xc4b5fd,
-    cols: 2,
-    docks: 3,
+    name: "Logistics Hub",
+    color: 0x9fe0b8,
+    floors: 2,
+    cols: 3,
+    win: true,
+    docks: 2,
     data: {
-      sub: "Last-Mile Distribution Node",
+      sub: "Routing & Dispatch",
       kpis: [
-        ["Fleet Readiness", "94%"],
-        ["Avg Route Time", "24 min"],
-        ["On-Time Rate", "97.8%"],
-        ["Fuel Savings", "-14%"],
+        ["On-Time", "93%"],
+        ["Routes", "48"],
+        ["Workers", "61"],
+        ["Energy Use", "0.8 MW"],
       ],
       metrics: [
-        ["Active Vans", "38"],
-        ["Packages / Hr", "1,850"],
-        ["EV Chargers", "12/12"],
+        ["Avg Delay", "14 min"],
+        ["Fleet", "36"],
+        ["Cost/km", "$1.18"],
       ],
-      risk: "low",
-      rec: "EV fleet charging balanced; peak delivery window fully covered.",
+      risk: "med",
+      rec: "Divert 6 shipments via corridor-2 to relieve the H1 bottleneck.",
     },
   },
   {
     id: "distribution",
-    name: "Regional Sorting Center",
-    color: 0xfbcfe8,
-    cols: 2,
-    docks: 3,
+    name: "Distribution Center",
+    color: 0xc3b1e8,
+    floors: 2,
+    cols: 3,
+    win: true,
+    docks: 2,
     data: {
-      sub: "Cross-Dock Operations",
+      sub: "Regional Distribution",
       kpis: [
-        ["Sort Speed", "4,200/hr"],
-        ["Error Rate", "0.01%"],
-        ["Uptime", "99.9%"],
-        ["Backlog", "0"],
+        ["Throughput", "5,800/d"],
+        ["Accuracy", "99.6%"],
+        ["Workers", "73"],
+        ["Energy Use", "0.9 MW"],
       ],
       metrics: [
-        ["Conveyor Length", "640 m"],
-        ["Shift Size", "42"],
-        ["Power", "380 kW"],
+        ["Dock Utilisation", "82%"],
+        ["Returns", "0.7%"],
+        ["Carriers", "5"],
       ],
       risk: "low",
-      rec: "Sort belts operating at 74% capacity; ready for high-volume intake.",
+      rec: "Stagger carrier arrivals 11:00–13:00 to flatten dock queueing.",
     },
   },
   {
     id: "port",
-    name: "Maritime Seaport Terminal",
-    color: 0x7dd3fc,
-    cols: 3,
+    name: "Maritime Port",
+    color: 0xef7e72,
+    zone: true,
     data: {
-      sub: "Ocean Freight Compound",
+      sub: "Sea Freight Terminal",
       kpis: [
-        ["Container Flow", "850 TEU/d"],
-        ["Berth Occupancy", "66%"],
-        ["Crane Velocity", "28/hr"],
-        ["Customs Clear", "1.2 hrs"],
+        ["TEU/day", "1,240"],
+        ["Berths", "3"],
+        ["Workers", "52"],
+        ["Energy Use", "1.6 MW"],
       ],
       metrics: [
-        ["Vessels Docked", "2"],
-        ["Reefer Plugged", "84"],
-        ["Rail Link", "Active"],
+        ["Crane Moves/hr", "28"],
+        ["Vessel Queue", "1"],
+        ["Dwell", "2.1 d"],
       ],
-      risk: "low",
-      rec: "Ship 'Sea Voyager' discharging cargo; rail transfer proceeding on schedule.",
+      risk: "med",
+      rec: "Pre-stage export containers to cut vessel turnaround by ~18%.",
     },
   },
   {
     id: "airport",
-    name: "Global Cargo Helipad",
-    color: 0x93c5fd,
-    cols: 3,
+    name: "Air Cargo Terminal",
+    color: 0xf4e285,
+    zone: true,
     data: {
-      sub: "Priority Aviation Hub",
+      sub: "Air Freight & Express",
       kpis: [
-        ["Air Velocity", "1.4 hrs"],
-        ["Sort Time", "8 min"],
-        ["Fleet Uptime", "100%"],
-        ["Priority Rate", "99.4%"],
+        ["Tonnes/day", "310"],
+        ["Flights", "9"],
+        ["Workers", "44"],
+        ["Energy Use", "1.3 MW"],
       ],
       metrics: [
-        ["Active Aircraft", "1 Cargo Plane"],
-        ["Runway Status", "Clear"],
-        ["Wind Conditions", "8 kts NW"],
+        ["SLA", "98.4%"],
+        ["Customs", "12 min"],
+        ["Sort Rate", "2,100/h"],
       ],
       risk: "low",
-      rec: "Priority flight inbound at 14:30; clearance protocols pre-approved.",
+      rec: "Open express lane 04:00–06:00 to absorb the morning peak.",
     },
   },
   {
     id: "energy",
     name: "Renewable Energy Park",
-    color: 0xfde047,
-    cols: 3,
+    color: 0x9fe0b8,
+    zone: true,
     data: {
-      sub: "Clean Power Microgrid",
+      sub: "Solar + Wind Generation",
       kpis: [
-        ["Solar Output", "3.8 MW"],
-        ["Wind Generation", "2.4 MW"],
-        ["BESS Charge", "94%"],
-        ["Carbon Saved", "18.4 T/d"],
+        ["Output", "6.2 MW"],
+        ["Solar", "3.8 MW"],
+        ["Wind", "2.4 MW"],
+        ["CO₂ Saved", "41 t/d"],
       ],
       metrics: [
-        ["Solar Arrays", "12 Active"],
-        ["Turbines", "3 Rotating"],
-        ["Grid Import", "0.0 kW"],
+        ["Storage", "82%"],
+        ["Grid Load", "Self + 1.4 MW export"],
+        ["Uptime", "99.9%"],
       ],
       risk: "low",
-      rec: "Solar array efficiency at 96%. Storage capacity adequate for evening peak.",
+      rec: "Shift battery discharge to 18:00–20:00 tariff window (+$4.2k/day).",
     },
   },
 ];
@@ -280,13 +304,19 @@ export class BuildingSystem {
     this.initBuildings();
   }
 
-  private mat(color: number, opts: { rough?: number; metal?: number } = {}) {
-    const key = `${color}_${opts.rough ?? 0.5}_${opts.metal ?? 0.1}`;
+  private mat(
+    color: number,
+    opts: { rough?: number; metal?: number; flat?: boolean; em?: number; emI?: number } = {}
+  ) {
+    const key = `${color}_${opts.rough ?? 0.85}_${opts.metal ?? 0}_${opts.flat ? 1 : 0}_${opts.em ?? 0}_${opts.emI ?? 0}`;
     if (!this.matCache.has(key)) {
       const m = new THREE.MeshStandardMaterial({
         color,
-        roughness: opts.rough ?? 0.5,
-        metalness: opts.metal ?? 0.1,
+        roughness: opts.rough ?? 0.85,
+        metalness: opts.metal ?? 0,
+        flatShading: !!opts.flat,
+        emissive: opts.em ?? 0,
+        emissiveIntensity: opts.emI ?? 0,
       });
       this.matCache.set(key, m);
       this.disposedMaterials.push(m);
@@ -303,190 +333,640 @@ export class BuildingSystem {
     y = 0,
     z = 0,
     parent: THREE.Object3D = this.outerGroup,
-    castShadow = true
+    castShadow = false,
+    receiveShadow = false
   ): THREE.Mesh {
     const geo = new THREE.BoxGeometry(w, h, d);
     this.disposedGeometries.push(geo);
     const mesh = new THREE.Mesh(geo, material);
     mesh.position.set(x, y, z);
     mesh.castShadow = castShadow && !this.isMobile;
-    mesh.receiveShadow = !this.isMobile;
-    parent.add(mesh);
+    mesh.receiveShadow = receiveShadow && !this.isMobile;
+    if (parent) parent.add(mesh);
+    return mesh;
+  }
+
+  private cyl(
+    rt: number,
+    rb: number,
+    h: number,
+    seg: number,
+    material: THREE.Material,
+    x = 0,
+    y = 0,
+    z = 0,
+    parent: THREE.Object3D = this.outerGroup,
+    castShadow = false
+  ): THREE.Mesh {
+    const geo = new THREE.CylinderGeometry(rt, rb, h, seg);
+    this.disposedGeometries.push(geo);
+    const mesh = new THREE.Mesh(geo, material);
+    mesh.position.set(x, y, z);
+    mesh.castShadow = castShadow && !this.isMobile;
+    if (parent) parent.add(mesh);
     return mesh;
   }
 
   private initBaseIsland() {
-    this.box(160, 4, 160, this.mat(0xd5dbd6, { rough: 0.9 }), 0, -2, 0);
-    this.box(152, 0.4, 152, this.mat(0x94b88f, { rough: 0.85 }), 0, 0.2, 0);
+    this.box(640, 2, 640, this.mat(P.table, { rough: 0.6, metal: 0.05 }), 0, -2.2, 0, this.outerGroup, false, true);
+    this.box(132, 0.8, 104, this.mat(P.sand, { rough: 0.9 }), 0, -0.9, 0, this.outerGroup, false, true);
+    this.box(128, 0.8, 100, this.mat(P.grass, { rough: 0.95 }), 0, -0.1, 0, this.outerGroup, false, true);
+
+    for (let i = 0; i < 26; i++) {
+      const w = 8 + Math.random() * 16;
+      const d = 8 + Math.random() * 16;
+      const x = (Math.random() - 0.5) * 116;
+      const z = (Math.random() - 0.5) * 90;
+      this.box(
+        w,
+        0.05,
+        d,
+        this.mat(i % 2 ? P.grassDk : P.grass, { rough: 1 }),
+        x,
+        0.32,
+        z,
+        this.outerGroup,
+        false,
+        true
+      );
+    }
+  }
+
+  private roadStrip(x1: number, z1: number, x2: number, z2: number, w = 6) {
+    const dx = x2 - x1;
+    const dz = z2 - z1;
+    const len = Math.hypot(dx, dz);
+    const m = this.box(
+      len,
+      0.12,
+      w,
+      this.mat(P.road, { rough: 0.95 }),
+      (x1 + x2) / 2,
+      0.36,
+      (z1 + z2) / 2,
+      this.outerGroup,
+      false,
+      true
+    );
+    m.rotation.y = -Math.atan2(dz, dx);
+
+    const dashes = Math.max(1, Math.floor(len / 4));
+    for (let i = 0; i < dashes; i++) {
+      const t = (i + 0.5) / dashes;
+      const lx = x1 + dx * t;
+      const lz = z1 + dz * t;
+      const d = this.box(
+        1.4,
+        0.04,
+        0.4,
+        this.mat(P.roadLine, { rough: 0.7 }),
+        lx,
+        0.43,
+        lz,
+        this.outerGroup
+      );
+      d.rotation.y = -Math.atan2(dz, dx);
+    }
+    return m;
   }
 
   private initRoadNetwork() {
-    const roadMat = this.mat(0x323842, { rough: 0.7 });
-    const markMat = this.mat(0xffffff, { rough: 0.4 });
-    const paveMat = this.mat(0xb8c0b5, { rough: 0.8 });
+    const r = (a: number, b: number, c: number, d: number, w = 6) =>
+      this.roadStrip(a, b, c, d, w);
 
-    this.box(128, 0.08, 14, roadMat, 0, 0.44, 0);
-    this.box(14, 0.08, 128, roadMat, 0, 0.44, 0);
+    r(-61, -47, 61, -47);
+    r(61, -47, 61, 47);
+    r(61, 47, -61, 47);
+    r(-61, 47, -61, -47);
+    r(-18, -47, -18, 47);
+    r(18, -47, 18, 47);
+    r(-61, 0, 61, 0);
+  }
 
-    this.box(128, 0.09, 0.35, markMat, 0, 0.45, 0);
-    this.box(0.35, 0.09, 128, markMat, 0, 0.45, 0);
+  private onRoadOrPlot(x: number, z: number): boolean {
+    if (Math.abs(z) < 4) return true;
+    if (Math.abs(x + 18) < 4 || Math.abs(x - 18) < 4) return true;
+    if (Math.abs(x) > 58 || Math.abs(z) > 44) return true;
 
-    const PLOTS = Object.values(PLOT);
-    PLOTS.forEach(([px, pz, pw, pd]) => {
-      this.box(pw * 3.6 + 1.2, 0.12, pd * 3.6 + 1.2, paveMat, px, 0.3, pz);
-    });
+    for (const k in PLOT) {
+      const p = PLOT[k as FacilityId];
+      if (Math.abs(x - p[0]) < p[2] + 2 && Math.abs(z - p[1]) < p[3] + 2) return true;
+    }
+    return false;
   }
 
   private initInstancedElements() {
-    const treeCount = this.isMobile ? 35 : 75;
-    const trunkGeo = new THREE.CylinderGeometry(0.2, 0.35, 2.2, 5);
-    const crownGeo = new THREE.ConeGeometry(1.6, 3.8, 5);
-    this.disposedGeometries.push(trunkGeo, crownGeo);
+    const COUNT = this.isMobile ? 50 : 70;
+    const tg = new THREE.CylinderGeometry(0.35, 0.5, 2.2, 6);
+    const lg = new THREE.ConeGeometry(1.9, 4.2, 7);
+    const lg2 = new THREE.IcosahedronGeometry(2.0, 0);
+    this.disposedGeometries.push(tg, lg, lg2);
 
-    const trunkMat = this.mat(0x5a4332, { rough: 0.9 });
-    const crownMat = this.mat(0x3e7a44, { rough: 0.8 });
+    const tm = this.mat(P.trunk, { rough: 0.9, flat: true });
+    const lm = this.mat(P.leaf, { rough: 0.9, flat: true });
+    const lm2 = this.mat(P.leafDk, { rough: 0.9, flat: true });
 
-    const trunkMesh = new THREE.InstancedMesh(trunkGeo, trunkMat, treeCount);
-    const crownMesh = new THREE.InstancedMesh(crownGeo, crownMat, treeCount);
-    const mat4 = new THREE.Matrix4();
+    const trunks = new THREE.InstancedMesh(tg, tm, COUNT);
+    const leaves = new THREE.InstancedMesh(lg, lm, COUNT);
+    const leaves2 = new THREE.InstancedMesh(lg2, lm2, COUNT);
+    trunks.castShadow = leaves.castShadow = !this.isMobile;
+    trunks.receiveShadow = !this.isMobile;
+
+    const m = new THREE.Matrix4();
+    const q = new THREE.Quaternion();
+    const s = new THREE.Vector3();
 
     let placed = 0;
-    while (placed < treeCount) {
-      const rx = (Math.random() - 0.5) * 140;
-      const rz = (Math.random() - 0.5) * 140;
-      if (Math.abs(rx) < 12 || Math.abs(rz) < 12) continue;
+    let guard = 0;
 
-      mat4.makeTranslation(rx, 1.3, rz);
-      trunkMesh.setMatrixAt(placed, mat4);
+    while (placed < COUNT && guard < COUNT * 30) {
+      guard++;
+      const x = (Math.random() - 0.5) * 120;
+      const z = (Math.random() - 0.5) * 92;
+      if (this.onRoadOrPlot(x, z)) continue;
 
-      mat4.makeTranslation(rx, 3.8, rz);
-      crownMesh.setMatrixAt(placed, mat4);
+      const sc = 0.7 + Math.random() * 0.7;
+      const round = Math.random() > 0.5;
+
+      m.compose(new THREE.Vector3(x, 1.1 * sc, z), q, s.set(sc, sc, sc));
+      trunks.setMatrixAt(placed, m);
+
+      m.compose(new THREE.Vector3(x, (2.2 + 2.1) * sc, z), q, s.set(sc, sc, sc));
+      (round ? leaves2 : leaves).setMatrixAt(placed, m);
+
+      m.compose(new THREE.Vector3(x, -10, z), q, s.set(0, 0, 0));
+      (round ? leaves : leaves2).setMatrixAt(placed, m);
+
       placed++;
     }
 
-    trunkMesh.instanceMatrix.needsUpdate = true;
-    crownMesh.instanceMatrix.needsUpdate = true;
-    this.outerGroup.add(trunkMesh, crownMesh);
+    trunks.count = leaves.count = leaves2.count = placed;
+    trunks.instanceMatrix.needsUpdate = true;
+    leaves.instanceMatrix.needsUpdate = true;
+    leaves2.instanceMatrix.needsUpdate = true;
 
-    const lampCount = this.isMobile ? 12 : 24;
-    const lampPoleGeo = new THREE.CylinderGeometry(0.1, 0.12, 4.5, 6);
-    this.disposedGeometries.push(lampPoleGeo);
-    const poleMat = this.mat(0x4a525d, { rough: 0.5 });
-    const lampMesh = new THREE.InstancedMesh(lampPoleGeo, poleMat, lampCount);
+    this.outerGroup.add(trunks, leaves, leaves2);
 
-    let lPlaced = 0;
-    for (let i = -55; i <= 55; i += 20) {
-      if (Math.abs(i) < 10) continue;
-      mat4.makeTranslation(i, 2.45, 8.5);
-      lampMesh.setMatrixAt(lPlaced++, mat4);
-      mat4.makeTranslation(8.5, 2.45, i);
-      lampMesh.setMatrixAt(lPlaced++, mat4);
-      if (lPlaced >= lampCount) break;
+    // Streetlights
+    const spots: [number, number][] = [];
+    for (let x = -58; x <= 58; x += 29) {
+      spots.push([x, -44]);
+      spots.push([x, 44]);
     }
-    lampMesh.instanceMatrix.needsUpdate = true;
-    this.outerGroup.add(lampMesh);
+    for (let z = -30; z <= 30; z += 20) {
+      spots.push([-58, z]);
+      spots.push([58, z]);
+    }
+
+    const pg = new THREE.CylinderGeometry(0.18, 0.22, 5, 6);
+    const lSphereGeo = new THREE.SphereGeometry(0.55, 8, 6);
+    this.disposedGeometries.push(pg, lSphereGeo);
+
+    const poles = new THREE.InstancedMesh(pg, this.mat(P.metal, { rough: 0.5, metal: 0.5 }), spots.length);
+    const lamps = new THREE.InstancedMesh(lSphereGeo, this.env.matLamp, spots.length);
+    poles.castShadow = !this.isMobile;
+
+    const sOne = new THREE.Vector3(1, 1, 1);
+    spots.forEach((pSpot, i) => {
+      m.compose(new THREE.Vector3(pSpot[0], 2.5, pSpot[1]), q, sOne);
+      poles.setMatrixAt(i, m);
+      m.compose(new THREE.Vector3(pSpot[0], 5.1, pSpot[1]), q, sOne);
+      lamps.setMatrixAt(i, m);
+    });
+
+    poles.instanceMatrix.needsUpdate = true;
+    lamps.instanceMatrix.needsUpdate = true;
+    this.outerGroup.add(poles, lamps);
+
+    [[-18, 0], [18, 0], [0, -30], [0, 30]].forEach((pSpot) => {
+      const pl = new THREE.PointLight(0xffd9a0, 0, 26, 2);
+      pl.position.set(pSpot[0], 5, pSpot[1]);
+      this.outerGroup.add(pl);
+      this.updatables.push(() => {
+        pl.intensity = (1 - this.env.matWindow.emissiveIntensity) * 0.9;
+      });
+    });
   }
 
   private initSpecialSites() {
+    // Maritime Seaport
     const portGroup = new THREE.Group();
-    portGroup.position.set(50, 0.4, 30);
-    this.box(28, 0.2, 22, this.mat(0x7a8494, { rough: 0.6 }), 0, 0.1, 0, portGroup);
-    this.box(32, 0.1, 8, this.mat(0x2f689e, { rough: 0.2 }), 0, -0.05, 12, portGroup);
-
-    for (let i = 0; i < 2; i++) {
-      const cg = new THREE.Group();
-      cg.position.set(-8 + i * 16, 0, 0);
-      this.box(1.2, 10, 1.2, this.mat(0xd64536), -3, 5, 0, cg);
-      this.box(1.2, 10, 1.2, this.mat(0xd64536), 3, 5, 0, cg);
-      this.box(10, 1.2, 1.2, this.mat(0xd64536), 0, 9.5, 0, cg);
-      this.box(1.2, 3, 1.2, this.mat(0xf0c83c), 0, 7.5, 3, cg);
-      portGroup.add(cg);
-    }
+    portGroup.position.set(50, 0, 30);
     this.outerGroup.add(portGroup);
 
-    const airGroup = new THREE.Group();
-    airGroup.position.set(40, 0.4, -26);
-    this.box(40, 0.1, 14, this.mat(0x2d323b, { rough: 0.7 }), 0, 0.05, 0, airGroup);
+    const waterMat = new THREE.MeshStandardMaterial({
+      color: P.water,
+      roughness: 0.15,
+      metalness: 0.1,
+      transparent: true,
+      opacity: 0.92,
+    });
+    this.disposedMaterials.push(waterMat);
+    this.box(13, 0.3, 17, waterMat, 0, -0.05, 0, portGroup, false, true);
+    this.box(14, 0.6, 18, this.mat(P.sand, { rough: 0.9 }), 0, -0.4, 0, portGroup);
+    this.box(3, 0.5, 17, this.mat(0xc9cdd4, { rough: 0.8 }), -7.5, 0.2, 0, portGroup, false, true);
 
-    for (let x = -16; x <= 16; x += 4) {
-      this.box(0.4, 0.15, 0.4, this.env.matRunway, x, 0.1, -6.5, airGroup);
-      this.box(0.4, 0.15, 0.4, this.env.matRunway, x, 0.1, 6.5, airGroup);
-    }
-    this.outerGroup.add(airGroup);
-
-    const energyGroup = new THREE.Group();
-    energyGroup.position.set(0, 0.4, 26);
-    for (let r = 0; r < 2; r++) {
-      for (let c = 0; c < 4; c++) {
-        const pan = this.box(2.4, 0.1, 1.6, this.env.matSolar, 0, 0, 0, energyGroup);
-        pan.position.set(-6 + c * 4, 0.6, -3 + r * 6);
-        pan.rotation.x = -0.3;
-      }
-    }
-
-    const blades: THREE.Group[] = [];
-    for (let i = 0; i < 3; i++) {
-      const tg = new THREE.Group();
-      tg.position.set(-8 + i * 8, 0, 6);
-      this.box(0.5, 12, 0.5, this.mat(0xe0e6ed, { rough: 0.4 }), 0, 6, 0, tg);
-      const hub = this.box(0.9, 0.9, 1.1, this.mat(0xd0d7de), 0, 11.8, 0.5, tg);
-      const bladeGrp = new THREE.Group();
-      bladeGrp.position.set(0, 11.8, 1.1);
-
-      for (let b = 0; b < 3; b++) {
-        const blade = this.box(0.3, 4.5, 0.08, this.mat(0xffffff), 0, 2.25, 0, bladeGrp);
-        blade.rotation.z = (b * Math.PI * 2) / 3;
-      }
-      tg.add(bladeGrp);
-      blades.push(bladeGrp);
-      energyGroup.add(tg);
+    const cc = [0xd9534f, 0x4f9dff, 0x37d399, 0xffb454, 0x9b7bff];
+    for (let i = 0; i < 10; i++) {
+      const cz = -7 + i * 1.6;
+      this.box(
+        2.2,
+        1.4,
+        1.4,
+        this.mat(cc[i % 5], { rough: 0.6 }),
+        -7.5 + (Math.random() - 0.5) * 1.5,
+        1.0 + (i % 2) * 1.4,
+        cz,
+        portGroup,
+        true
+      );
     }
 
-    this.updatables.push((dt) => {
-      blades.forEach((b) => (b.rotation.z += dt * 1.8));
+    const crane = new THREE.Group();
+    crane.position.set(-3, 0, 0);
+    portGroup.add(crane);
+
+    this.box(0.6, 9, 0.6, this.mat(P.orange, { rough: 0.5 }), -2, 4.5, -7, crane, true);
+    this.box(0.6, 9, 0.6, this.mat(P.orange, { rough: 0.5 }), -2, 4.5, 7, crane, true);
+    this.box(0.6, 9, 0.6, this.mat(P.orange, { rough: 0.5 }), 3, 4.5, -7, crane, true);
+    this.box(0.6, 9, 0.6, this.mat(P.orange, { rough: 0.5 }), 3, 4.5, 7, crane, true);
+    this.box(6, 0.7, 15, this.mat(P.orange, { rough: 0.5 }), 0.5, 9, 0, crane, true);
+
+    const trolley = this.box(1.6, 0.6, 1.6, this.mat(0x333842, { rough: 0.5 }), 0.5, 8.4, 0, crane, true);
+    const cable = this.box(0.12, 3, 0.12, this.mat(0x222222, { rough: 0.6 }), 0.5, 6.6, 0, crane);
+    const hook = this.box(1.4, 1, 1.4, this.mat(0xd9534f, { rough: 0.6 }), 0.5, 4.8, 0, crane, true);
+
+    this.updatables.push((_dt, t) => {
+      const z = Math.sin(t * 0.5) * 6;
+      trolley.position.z = z;
+      cable.position.z = z;
+      hook.position.z = z;
+      cable.scale.y = 0.7 + Math.sin(t * 0.9) * 0.3 + 0.3;
+      cable.position.y = 8.4 - cable.scale.y * 1.5;
+      hook.position.y = cable.position.y - 1.6;
     });
 
+    const portLight = new THREE.PointLight(0xffd9a0, 0, 30, 2);
+    portLight.position.set(-3, 7, 0);
+    portGroup.add(portLight);
+    this.updatables.push(() => {
+      portLight.intensity = (1 - this.env.matWindow.emissiveIntensity) * 1.2;
+    });
+
+    const ship = this.makeShip();
+    ship.position.set(2, 0.2, -7);
+    portGroup.add(ship);
+    let shipDir = 1;
+
+    this.updatables.push((dt) => {
+      ship.position.z += shipDir * dt * 1.6;
+      if (ship.position.z > 7) {
+        ship.position.z = 7;
+        shipDir = -1;
+        ship.rotation.y = Math.PI;
+      }
+      if (ship.position.z < -7) {
+        ship.position.z = -7;
+        shipDir = 1;
+        ship.rotation.y = 0;
+      }
+      ship.position.y = 0.2 + Math.sin(performance.now() * 0.001) * 0.08;
+    });
+
+    // Air Cargo Terminal
+    const airGroup = new THREE.Group();
+    airGroup.position.set(40, 0, -26);
+    this.outerGroup.add(airGroup);
+
+    this.box(26, 0.1, 5, this.mat(0x3a3f49, { rough: 0.9 }), 0, 0.34, 0, airGroup, false, true);
+    for (let i = -12; i <= 12; i += 2) {
+      this.box(1.2, 0.04, 0.3, this.mat(P.roadLine, { rough: 0.7 }), i, 0.4, 0, airGroup);
+    }
+    for (let i = -12; i <= 12; i += 3) {
+      this.box(0.4, 0.3, 0.4, this.env.matRunway, i, 0.5, 2.7, airGroup);
+      this.box(0.4, 0.3, 0.4, this.env.matRunway, i, 0.5, -2.7, airGroup);
+    }
+
+    const gv = this.makeCar(0xffb454);
+    gv.scale.setScalar(0.8);
+    gv.position.set(-6, 0.5, 5);
+    airGroup.add(gv);
+    let gvDir = 1;
+
+    this.updatables.push((dt) => {
+      gv.position.x += gvDir * dt * 3;
+      gv.rotation.y = gvDir > 0 ? Math.PI / 2 : -Math.PI / 2;
+      if (gv.position.x > 4) gvDir = -1;
+      if (gv.position.x < -8) gvDir = 1;
+    });
+
+    const plane = this.makePlane();
+    airGroup.add(plane);
+
+    const loopPath: [number, number, number][] = [
+      [-12, 0, -9],
+      [12, 0, -9],
+      [12, 0, 9],
+      [-12, 0, 9],
+    ];
+    let planeSeg = 0;
+    let planeProg = 0;
+
+    this.updatables.push((dt) => {
+      planeProg += dt * 0.18;
+      if (planeProg >= 1) {
+        planeProg -= 1;
+        planeSeg = (planeSeg + 1) % loopPath.length;
+      }
+      const a = loopPath[planeSeg];
+      const b = loopPath[(planeSeg + 1) % loopPath.length];
+      const x = a[0] + (b[0] - a[0]) * planeProg;
+      const z = a[2] + (b[2] - a[2]) * planeProg;
+      const y = planeSeg === 0 ? Math.sin(planeProg * Math.PI) * 7 : 0.6;
+
+      plane.position.set(x, y + 0.6, z);
+      plane.rotation.y = -Math.atan2(b[2] - a[2], b[0] - a[0]);
+      plane.rotation.z = planeSeg === 0 ? -0.18 * Math.sin(planeProg * Math.PI) : 0;
+    });
+
+    // Renewable Energy Park
+    const energyGroup = new THREE.Group();
+    energyGroup.position.set(0, 0, 26);
     this.outerGroup.add(energyGroup);
+
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 4; c++) {
+        const panel = this.box(
+          3.2,
+          0.18,
+          2.0,
+          this.env.matSolar,
+          -7 + c * 3.6,
+          1.1,
+          -6 + r * 3.0,
+          energyGroup,
+          true
+        );
+        panel.rotation.x = -0.5;
+        this.box(0.2, 1.0, 0.2, this.mat(P.metal, { rough: 0.5 }), -7 + c * 3.6, 0.5, -6 + r * 3.0, energyGroup);
+      }
+    }
+
+    const turbines: THREE.Group[] = [];
+    [
+      [7, -6],
+      [9, 0],
+      [7, 6],
+    ].forEach((pSpot) => {
+      const t = new THREE.Group();
+      t.position.set(pSpot[0], 0, pSpot[1]);
+      energyGroup.add(t);
+
+      this.box(0.5, 9, 0.5, this.mat(P.white, { rough: 0.5 }), 0, 4.5, 0, t, true);
+      this.box(0.8, 0.8, 0.8, this.mat(P.metal, { rough: 0.4 }), 0, 9, 0.4, t);
+
+      const rotor = new THREE.Group();
+      rotor.position.set(0, 9, 0.7);
+      t.add(rotor);
+
+      for (let i = 0; i < 3; i++) {
+        const blade = this.box(0.4, 4.4, 0.12, this.mat(P.white, { rough: 0.5 }), 0, 2.2, 0, rotor);
+        blade.rotation.z = (i * Math.PI * 2) / 3;
+      }
+      turbines.push(rotor);
+    });
+
+    this.updatables.push((dt) => {
+      for (const rRotor of turbines) rRotor.rotation.z += dt * 1.4;
+    });
+
+    this.box(5, 3.5, 4, this.mat(0xb9c2cc, { rough: 0.5 }), -8, 1.75, 7, energyGroup, true, true);
+    this.box(5.4, 0.4, 4.4, this.mat(P.roof, { rough: 0.7 }), -8, 3.7, 7, energyGroup, true);
+
+    const indMat = new THREE.MeshStandardMaterial({
+      color: 0x37d399,
+      emissive: 0x37d399,
+      emissiveIntensity: 1,
+      roughness: 0.4,
+    });
+    this.disposedMaterials.push(indMat);
+    this.box(0.5, 0.5, 0.5, indMat, -6, 3.0, 5.0, energyGroup);
+
+    this.updatables.push((_dt, t) => {
+      indMat.emissiveIntensity = 0.4 + (Math.sin(t * 4) > 0 ? 0.8 : 0);
+    });
+
+    const curve = new THREE.CatmullRomCurve3(
+      [
+        new THREE.Vector3(-8, 2, 7),
+        new THREE.Vector3(-8, 2, 18),
+        new THREE.Vector3(-18, 2, 18),
+        new THREE.Vector3(-18, 2, 0),
+      ].map((v) => v.clone().add(energyGroup.position))
+    );
+
+    const tubeMat = new THREE.MeshStandardMaterial({
+      color: 0x34e0d8,
+      emissive: 0x34e0d8,
+      emissiveIntensity: 0.6,
+      transparent: true,
+      opacity: 0.5,
+    });
+    this.disposedMaterials.push(tubeMat);
+
+    const tubeGeo = new THREE.TubeGeometry(curve, 30, 0.12, 6, false);
+    this.disposedGeometries.push(tubeGeo);
+    this.outerGroup.add(new THREE.Mesh(tubeGeo, tubeMat));
+
+    const pulseGeo = new THREE.SphereGeometry(0.4, 8, 6);
+    const pulseMat = new THREE.MeshBasicMaterial({ color: 0x9bfff8 });
+    this.disposedGeometries.push(pulseGeo);
+    this.disposedMaterials.push(pulseMat);
+
+    const pulse = new THREE.Mesh(pulseGeo, pulseMat);
+    this.outerGroup.add(pulse);
+
+    this.updatables.push((_dt, t) => {
+      pulse.position.copy(curve.getPoint((t * 0.18) % 1));
+    });
+  }
+
+  private makeShip(): THREE.Group {
+    const g = new THREE.Group();
+    this.box(3.4, 1.4, 8, this.mat(0x2b3340, { rough: 0.5 }), 0, 0.5, 0, g, true);
+    this.box(3.0, 0.3, 7.4, this.mat(0xd9534f, { rough: 0.6 }), 0, 1.25, 0, g);
+    this.box(2.2, 1.6, 1.8, this.mat(P.white, { rough: 0.6 }), 0, 2.0, -3, g, true);
+
+    const cc = [0x4f9dff, 0x37d399, 0xffb454];
+    for (let i = 0; i < 3; i++) {
+      this.box(2.4, 1.0, 1.4, this.mat(cc[i], { rough: 0.6 }), 0, 1.7, -0.5 + i * 1.6, g, true);
+    }
+    return g;
+  }
+
+  private makePlane(): THREE.Group {
+    const g = new THREE.Group();
+    this.box(1.4, 1.4, 7, this.mat(P.white, { rough: 0.4 }), 0, 0.7, 0, g, true);
+    this.box(8, 0.25, 2.0, this.mat(0xdfe6ee, { rough: 0.4 }), 0, 0.7, 0.4, g, true);
+    this.box(0.3, 1.6, 1.4, this.mat(0x4f9dff, { rough: 0.4 }), 0, 1.3, -3.2, g, true);
+    this.box(2.4, 0.2, 0.9, this.mat(0xdfe6ee, { rough: 0.4 }), 0, 1.2, -3.0, g, true);
+    this.box(1.2, 1.0, 1.0, this.mat(0x8fc7e8, { rough: 0.2 }), 0, 0.9, 3.0, g);
+    return g;
+  }
+
+  private makeCar(color: number): THREE.Group {
+    const g = new THREE.Group();
+    this.box(1.7, 0.7, 3.2, this.mat(color, { rough: 0.35, metal: 0.25 }), 0, 0.6, 0, g, true);
+    this.box(1.4, 0.65, 1.6, this.mat(0x8fc7e8, { rough: 0.2 }), 0, 1.1, -0.2, g);
+
+    const wg = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 10);
+    this.disposedGeometries.push(wg);
+    const wm = this.mat(0x1d1d22, { rough: 0.7 });
+
+    [
+      [-0.85, 1.2],
+      [0.85, 1.2],
+      [-0.85, -1.2],
+      [0.85, -1.2],
+    ].forEach((pSpot) => {
+      const wMesh = new THREE.Mesh(wg, wm);
+      wMesh.rotation.z = Math.PI / 2;
+      wMesh.position.set(pSpot[0], 0.4, pSpot[1]);
+      g.add(wMesh);
+    });
+
+    this.box(0.35, 0.28, 0.12, this.env.matHead, -0.6, 0.65, 1.6, g);
+    this.box(0.35, 0.28, 0.12, this.env.matHead, 0.6, 0.65, 1.6, g);
+    return g;
   }
 
   private initBuildings() {
-    SPECS.forEach((s) => this.buildCompound(s));
+    SPECS.forEach((s) => {
+      if (s.zone) this.registerZone(s);
+      else this.build(s);
+    });
   }
 
-  private buildCompound(s: BuildingSpec) {
+  private registerZone(s: BuildingSpec) {
     const p = PLOT[s.id];
-    if (!p) return;
+    const height = 6;
+
+    const pickMat = new THREE.MeshBasicMaterial({ visible: false });
+    this.disposedMaterials.push(pickMat);
+    const pick = this.box(p[2] * 2, height, p[3] * 2, pickMat, p[0], height / 2, p[1], this.outerGroup);
+    pick.userData = { buildingId: s.id };
+    this.pickWorld.push(pick);
+
+    const haloMat = new THREE.MeshBasicMaterial({
+      color: 0x34e0d8,
+      transparent: true,
+      opacity: 0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    this.disposedMaterials.push(haloMat);
+    const halo = this.box(
+      p[2] * 2 + 1.2,
+      height + 1,
+      p[3] * 2 + 1.2,
+      haloMat,
+      p[0],
+      height / 2,
+      p[1],
+      this.outerGroup
+    );
+
+    this.buildings[s.id] = {
+      group: null,
+      pick,
+      halo,
+      center: [p[0], p[1]],
+      height,
+      data: s.data,
+      name: s.name,
+      selected: false,
+    };
+  }
+
+  private build(s: BuildingSpec) {
+    const p = PLOT[s.id];
+    const w = p[2] * 2;
+    const d = p[3] * 2;
+    const floorH = s.industrial ? 4.2 : 3.4;
+    const floors = s.floors ?? 2;
+    const height = Math.max(4, floors * floorH);
 
     const g = new THREE.Group();
-    g.position.set(p[0], 0.4, p[1]);
+    g.position.set(p[0], 0, p[1]);
     this.outerGroup.add(g);
 
-    const w = p[2] * 2.2;
-    const d = p[3] * 2.2;
-    const floors = s.floors ?? 3;
-    const height = floors * 2.4 + 1.2;
+    const bodyMat = this.mat(s.color, { rough: 0.7 });
+    this.box(w, height, d, bodyMat, 0, height / 2, 0, g, true, true);
+    this.box(w + 0.6, 1.0, d + 0.6, this.mat(P.base, { rough: 0.8 }), 0, 0.5, 0, g, true, true);
+    this.box(w + 0.5, 0.6, d + 0.5, this.mat(P.roof, { rough: 0.7 }), 0, height + 0.3, 0, g, true);
 
-    this.box(w, height, d, this.mat(s.color, { rough: 0.4, metal: 0.1 }), 0, height / 2, 0, g);
-    this.box(w + 0.4, 0.5, d + 0.4, this.mat(0x2d323b, { rough: 0.8 }), 0, height + 0.25, 0, g);
+    if (s.id === "hq") {
+      this.box(w * 0.4, 2.2, d * 0.4, this.mat(P.roof, { rough: 0.6 }), 0, height + 1.4, 0, g, true);
+      this.box(0.3, 3, 0.3, this.mat(P.metal, { rough: 0.4 }), 0, height + 3.0, 0, g);
+    }
 
-    if (s.win) {
-      const cols = s.cols ?? 4;
+    if (s.industrial) {
+      for (let i = 0; i < 3; i++) {
+        this.cyl(
+          0.7,
+          0.7,
+          1.2,
+          8,
+          this.mat(P.metal, { rough: 0.5 }),
+          -w * 0.3 + i * w * 0.3,
+          height + 0.9,
+          0,
+          g,
+          true
+        );
+      }
+      const indMat = new THREE.MeshStandardMaterial({
+        color: 0x37d399,
+        emissive: 0x37d399,
+        emissiveIntensity: 1,
+        roughness: 0.4,
+      });
+      this.disposedMaterials.push(indMat);
+      const ind = this.box(0.6, 0.6, 0.6, indMat, w / 2 + 0.1, height * 0.6, 0, g);
+      this.updatables.push((_dt, t) => {
+        indMat.emissiveIntensity = 0.4 + (Math.sin(t * 3 + p[0]) > 0 ? 0.8 : 0);
+      });
+    }
+
+    if (s.win || floors > 1) {
+      const paneW = 1.3;
+      const paneH = 1.4;
+      const cols = s.cols || 3;
+      const paneGeo = new THREE.BoxGeometry(paneW, paneH, 0.18);
+      this.disposedGeometries.push(paneGeo);
+      const rows = floors;
+
       const place = (side: "N" | "S" | "E" | "W") => {
-        for (let f = 0; f < floors; f++) {
-          for (let c = 0; c < cols; c++) {
-            const y = 1.6 + f * 2.4;
-            const off = (c - (cols - 1) / 2) * (w / (cols + 0.5));
-            const m = this.box(1.2, 1.3, 0.15, this.env.matWindow);
-            if (side === "S") m.position.set(off, y, d / 2 + 0.05);
-            else if (side === "N") m.position.set(off, y, -d / 2 - 0.05);
+        for (let rIndex = 0; rIndex < rows; rIndex++) {
+          const y = 2.0 + rIndex * floorH;
+          if (y > height - 1) continue;
+
+          for (let cIndex = 0; cIndex < cols; cIndex++) {
+            const off =
+              (cIndex - (cols - 1) / 2) *
+              ((side === "N" || side === "S" ? w - 2 : d - 2) / cols);
+            const mMesh = new THREE.Mesh(paneGeo, this.env.matWindow);
+
+            if (side === "N") mMesh.position.set(off, y, -d / 2 - 0.05);
+            else if (side === "S") mMesh.position.set(off, y, d / 2 + 0.05);
             else if (side === "E") {
-              m.position.set(w / 2 + 0.05, y, off);
-              m.rotation.y = Math.PI / 2;
+              mMesh.position.set(w / 2 + 0.05, y, off);
+              mMesh.rotation.y = Math.PI / 2;
             } else {
-              m.position.set(-w / 2 - 0.05, y, off);
-              m.rotation.y = Math.PI / 2;
+              mMesh.position.set(-w / 2 - 0.05, y, off);
+              mMesh.rotation.y = Math.PI / 2;
             }
-            g.add(m);
+            g.add(mMesh);
           }
         }
       };
@@ -497,7 +977,12 @@ export class BuildingSystem {
     }
 
     if (s.docks) {
-      const face = s.id === "warehouse" || s.id === "logistics" ? "N" : s.id === "distribution" ? "W" : "S";
+      const face =
+        s.id === "warehouse" || s.id === "logistics"
+          ? "N"
+          : s.id === "distribution"
+          ? "W"
+          : "S";
       for (let i = 0; i < s.docks; i++) {
         const off = (i - (s.docks - 1) / 2) * 2.6;
         const dock = this.box(2.0, 1.6, 0.6, this.mat(0x444a55, { rough: 0.6 }));
@@ -551,7 +1036,7 @@ export class BuildingSystem {
     };
     this.buildings[s.id] = rec;
 
-    this.updatables.push((dt) => {
+    this.updatables.push((dt, t) => {
       const target = rec.selected ? 0.22 : 0;
       haloMat.opacity += (target - haloMat.opacity) * Math.min(1, dt * 10);
     });

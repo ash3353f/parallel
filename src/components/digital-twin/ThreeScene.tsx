@@ -89,7 +89,7 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
 
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.shadowMap.enabled = !isMobile;
+    renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.05;
@@ -117,7 +117,7 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
     controls.minPolarAngle = Math.PI * 0.1;
     controls.panSpeed = 0.6;
     controls.rotateSpeed = 0.7;
-    controls.enabled = false; // CALM & LOCKED overview by default until Explore is clicked!
+    controls.enabled = false; // Overview camera calm & locked by default until Explore mode is toggled
 
     const outerGroup = new THREE.Group();
     scene.add(outerGroup);
@@ -129,6 +129,7 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
       mode: "WORLD",
       worldMode: "day",
       dayFactor: 1,
+      isNight: false,
       explore: false,
       selectedId: null,
       hoveredId: null,
@@ -170,6 +171,7 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
 
     const setWorldMode = (newMode: DayNightMode) => {
       state.worldMode = newMode;
+      state.isNight = newMode === "night";
       env.setWorldMode(newMode, state.dayFactor, (factor) => {
         state.dayFactor = factor;
       });

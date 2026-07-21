@@ -1,10 +1,10 @@
 import * as THREE from "three";
-import gsap from "gsap";
 import { DigitalTwinState, SimResultRow } from "./digitalTwinTypes";
 import { CameraController } from "./CameraController";
 import { BuildingSystem } from "./BuildingSystem";
+import gsap from "gsap";
 
-export const SIM_RESULT_ROWS: SimResultRow[] = [
+const SIM_RESULT: SimResultRow[] = [
   { label: "Revenue", value: "+3.1%", trend: "up" },
   { label: "Profit", value: "+6.3%", trend: "up" },
   { label: "Risk", value: "-42.8%", trend: "down" },
@@ -17,9 +17,9 @@ function wait(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function tween(obj: Record<string, number>, key: string, to: number, dur: number): Promise<void> {
+function tweenProp(obj: Record<string, number>, key: string, to: number, dur: number): Promise<void> {
   return new Promise((resolve) => {
-    if (gsap) {
+    if (typeof window !== "undefined" && gsap) {
       gsap.to(obj, {
         [key]: to,
         duration: dur,
@@ -34,16 +34,16 @@ function tween(obj: Record<string, number>, key: string, to: number, dur: number
 }
 
 export class SimulationSystem {
-  public running = false;
+  private running = false;
 
   constructor(
     private state: DigitalTwinState,
     private camController: CameraController,
     private bSystem: BuildingSystem,
     private onToast: (msg: string, kind?: "" | "warn" | "good") => void,
-    private onSetBusy: (busy: boolean) => void,
-    private onShowResults: (rows: SimResultRow[]) => void,
-    private onHideResults: () => void,
+    private onSetSimBusy: (busy: boolean) => void,
+    private onShowSimResults: (rows: SimResultRow[]) => void,
+    private onHideSimResults: () => void,
     private onBumpKPIs: () => void
   ) {}
 
@@ -51,8 +51,8 @@ export class SimulationSystem {
     if (this.running) return;
     this.running = true;
     const sim = this.state.sim;
-    this.onSetBusy(true);
-    this.onHideResults();
+    this.onSetSimBusy(true);
+    this.onHideSimResults();
 
     if (this.state.mode !== "WORLD") {
       this.camController.exitInterior();
@@ -76,8 +76,8 @@ export class SimulationSystem {
     await wait(1400);
 
     this.onToast("Increasing warehouse throughput & factory cadence…", "");
-    await tween(sim as unknown as Record<string, number>, "warehouseBoost", 1.7, 1.2);
-    await tween(sim as unknown as Record<string, number>, "factoryBoost", 1.4, 1.0);
+    await tweenProp(sim as unknown as Record<string, number>, "warehouseBoost", 1.7, 1.2);
+    await tweenProp(sim as unknown as Record<string, number>, "factoryBoost", 1.4, 1.0);
     await wait(1200);
 
     this.onToast("Optimisation converged — applying new plan", "good");
@@ -86,17 +86,17 @@ export class SimulationSystem {
 
     this.onBumpKPIs();
     this.flashFactory(false);
-    this.onShowResults(SIM_RESULT_ROWS);
+    this.onShowSimResults(SIM_RESULT);
     this.onToast("Plan deployed. Monitoring live impact.", "good");
     await wait(2500);
 
-    await tween(sim as unknown as Record<string, number>, "warehouseBoost", 1.0, 1.5);
-    await tween(sim as unknown as Record<string, number>, "factoryBoost", 1.0, 1.5);
+    await tweenProp(sim as unknown as Record<string, number>, "warehouseBoost", 1.0, 1.5);
+    await tweenProp(sim as unknown as Record<string, number>, "factoryBoost", 1.0, 1.5);
     sim.blocked = false;
     await wait(1500);
     sim.active = false;
 
-    this.onSetBusy(false);
+    this.onSetSimBusy(false);
     this.running = false;
   }
 

@@ -18,34 +18,35 @@ export class PathFollower {
 
   constructor(
     points: THREE.Vector3[],
-    options: { speed?: number; loop?: boolean; stop?: number; alt?: THREE.Vector3[] | null } = {}
+    { speed = 6, loop = false, stop = 0, alt = null }: { speed?: number; loop?: boolean; stop?: number; alt?: THREE.Vector3[] | null } = {}
   ) {
     this.pts = points;
-    this.alt = options.alt ?? null;
-    this.speed = options.speed ?? 6;
-    this.baseSpeed = this.speed;
-    this.loop = !!options.loop;
-    this.stop = options.stop ?? 0;
+    this.alt = alt;
+    this.speed = speed;
+    this.baseSpeed = speed;
+    this.loop = loop;
+    this.stop = stop;
   }
 
   public active(): THREE.Vector3[] {
     return this.useAlt && this.alt ? this.alt : this.pts;
   }
 
-  public update(dt: number, obj: THREE.Object3D) {
+  public update(dt: number, obj: THREE.Group) {
     if (this.pts.length < 2) return;
     if (this.wait > 0) {
       this.wait -= dt;
       return;
     }
+
     const pts = this.active();
     const a = pts[this.seg];
     const b = pts[(this.seg + this.dir + pts.length) % pts.length];
     const dx = b.x - a.x;
     const dz = b.z - a.z;
     const len = Math.hypot(dx, dz) || 0.0001;
-    this.prog += (this.speed * dt) / len;
 
+    this.prog += (this.speed * dt) / len;
     const yaw = Math.atan2(dx, dz);
     obj.rotation.y += (yaw - obj.rotation.y) * Math.min(1, dt * 8);
 
@@ -78,19 +79,20 @@ export class PathFollower {
   }
 }
 
-export interface VehicleRecord {
+export interface FleetItem {
   obj: THREE.Group;
   f: PathFollower;
   kind: "car" | "truck" | "logistics" | "forklift";
 }
 
 export class VehicleSystem {
-  public fleet: VehicleRecord[] = [];
+  public fleet: FleetItem[] = [];
   public blockedMat!: THREE.MeshStandardMaterial;
   public altMat!: THREE.MeshStandardMaterial;
-  private lastBlocked = false;
+  private matCache = new Map<string, THREE.MeshStandardMaterial>();
   private disposedGeometries: THREE.BufferGeometry[] = [];
   private disposedMaterials: THREE.Material[] = [];
+  private lastBlocked = false;
 
   constructor(
     private outerGroup: THREE.Group,
@@ -100,38 +102,48 @@ export class VehicleSystem {
   ) {
     this.initFleet();
     this.buildSimRoads();
+    this.updatables.push((dt) => this.updateAll(dt, { active: false, blocked: false, slow: 1, warehouseBoost: 1, factoryBoost: 1 }));
   }
 
-  private box(w: number, h: number, d: number, m: THREE.Material, parent: THREE.Group): THREE.Mesh {
+  private mat(color: number, opts: { rough?: number; metal?: number } = {}) {
+    const key = `${color}_${opts.rough ?? 0.85}_${opts.metal ?? 0}`;
+    if (!this.matCache.has(key)) {
+      const m = new THREE.MeshStandardMaterial({
+        color,
+        roughness: opts.rough ?? 0.85,
+        metalness: opts.metal ?? 0,
+      });
+      this.matCache.set(key, m);
+      this.disposedMaterials.push(m);
+    }
+    return this.matCache.get(key)!;
+  }
+
+  private box(
+    w: number,
+    h: number,
+    d: number,
+    material: THREE.Material,
+    parent?: THREE.Group,
+    castShadow = true
+  ): THREE.Mesh {
     const geo = new THREE.BoxGeometry(w, h, d);
     this.disposedGeometries.push(geo);
-    const mesh = new THREE.Mesh(geo, m);
-    mesh.castShadow = true;
-    parent.add(mesh);
+    const mesh = new THREE.Mesh(geo, material);
+    mesh.castShadow = castShadow;
+    if (parent) parent.add(mesh);
     return mesh;
-  }
-
-  private mat(
-    color: number,
-    o: { rough?: number; metal?: number } = {}
-  ): THREE.MeshStandardMaterial {
-    const m = new THREE.MeshStandardMaterial({
-      color,
-      roughness: o.rough ?? 0.85,
-      metalness: o.metal ?? 0,
-    });
-    this.disposedMaterials.push(m);
-    return m;
   }
 
   private wheels(g: THREE.Group, r: number, pos: [number, number][]) {
     const geo = new THREE.CylinderGeometry(r, r, 0.3, 10);
     this.disposedGeometries.push(geo);
     const m = this.mat(0x1d1d22, { rough: 0.7 });
-    pos.forEach((p) => {
+
+    pos.forEach((pSpot) => {
       const w = new THREE.Mesh(geo, m);
       w.rotation.z = Math.PI / 2;
-      w.position.set(p[0], r, p[1]);
+      w.position.set(pSpot[0], r, pSpot[1]);
       w.castShadow = true;
       g.add(w);
     });
@@ -139,7 +151,7 @@ export class VehicleSystem {
 
   private makeCar(color: number): THREE.Group {
     const g = new THREE.Group();
-    this.box(1.7, 0.7, 3.2, this.mat(color, { rough: 0.35, metal: 0.25 }), g).position.set(0, 0.6, 0);
+    this.box(1.7, 0.7, 3.2, this.mat(color, { rough: 0.35, metal: 0.25 }), g, true).position.set(0, 0.6, 0);
     this.box(1.4, 0.65, 1.6, this.mat(0x8fc7e8, { rough: 0.2 }), g).position.set(0, 1.1, -0.2);
     this.wheels(g, 0.42, [
       [-0.85, 1.2],
@@ -154,9 +166,9 @@ export class VehicleSystem {
 
   private makeTruck(color: number): THREE.Group {
     const g = new THREE.Group();
-    this.box(2.0, 1.4, 2.2, this.mat(color, { rough: 0.4, metal: 0.2 }), g).position.set(0, 1.0, 1.4);
+    this.box(2.0, 1.4, 2.2, this.mat(color, { rough: 0.4, metal: 0.2 }), g, true).position.set(0, 1.0, 1.4);
     this.box(1.7, 1.0, 1.0, this.mat(0x8fc7e8, { rough: 0.2 }), g).position.set(0, 1.5, 1.7);
-    this.box(2.2, 1.8, 3.4, this.mat(0xeef2f7, { rough: 0.6 }), g).position.set(0, 1.2, -1.4);
+    this.box(2.2, 1.8, 3.4, this.mat(0xeef2f7, { rough: 0.6 }), g, true).position.set(0, 1.2, -1.4);
     this.wheels(g, 0.5, [
       [-1.0, 1.6],
       [1.0, 1.6],
@@ -172,12 +184,12 @@ export class VehicleSystem {
 
   private makeForklift(): THREE.Group {
     const g = new THREE.Group();
-    this.box(1.3, 1.0, 2.0, this.mat(P.orange, { rough: 0.4 }), g).position.set(0, 0.7, 0);
+    this.box(1.3, 1.0, 2.0, this.mat(P.orange, { rough: 0.4 }), g, true).position.set(0, 0.7, 0);
     this.box(1.0, 0.9, 0.9, this.mat(0x8fc7e8, { rough: 0.2 }), g).position.set(0, 1.3, -0.3);
     this.box(0.2, 2.2, 0.2, this.mat(P.metal, { rough: 0.4 }), g).position.set(0.5, 1.1, 1.2);
     this.box(0.2, 2.2, 0.2, this.mat(P.metal, { rough: 0.4 }), g).position.set(-0.5, 1.1, 1.2);
     this.box(1.2, 0.15, 0.9, this.mat(P.metal, { rough: 0.4 }), g).position.set(0, 0.5, 1.5);
-    this.box(1.0, 0.9, 1.0, this.mat(0xb07a3c, { rough: 0.7 }), g).position.set(0, 1.0, 1.6);
+    this.box(1.0, 0.9, 1.0, this.mat(0xb07a3c, { rough: 0.7 }), g, true).position.set(0, 1.0, 1.6);
     this.wheels(g, 0.35, [
       [-0.6, 0.8],
       [0.6, 0.8],
@@ -229,28 +241,6 @@ export class VehicleSystem {
     this.fleet.push({ obj: fk, f: new PathFollower(R.fork, { speed: 3, stop: 0.8 }), kind: "forklift" });
   }
 
-  public updateAll(dt: number, sim: SimulationState) {
-    if (sim.blocked !== this.lastBlocked) {
-      this.lastBlocked = sim.blocked;
-      for (const v of this.fleet) {
-        if (v.kind === "logistics") {
-          v.f.seg = 0;
-          v.f.prog = 0;
-          v.f.dir = 1;
-          v.f.wait = 0;
-        }
-      }
-    }
-    for (const v of this.fleet) {
-      let s = v.f.baseSpeed;
-      if (sim.active && v.kind === "logistics") s *= sim.slow;
-      if (v.kind === "forklift") s = v.f.baseSpeed * sim.warehouseBoost;
-      v.f.speed = s;
-      if (v.kind === "logistics") v.f.useAlt = sim.blocked;
-      v.f.update(dt, v.obj);
-    }
-  }
-
   private buildSimRoads() {
     this.blockedMat = new THREE.MeshStandardMaterial({
       color: 0xff5252,
@@ -262,9 +252,7 @@ export class VehicleSystem {
     });
     this.disposedMaterials.push(this.blockedMat);
 
-    const bGeo = new THREE.BoxGeometry(12, 0.16, 6.4);
-    this.disposedGeometries.push(bGeo);
-    const bMesh = new THREE.Mesh(bGeo, this.blockedMat);
+    const bMesh = this.box(12, 0.16, 6.4, this.blockedMat);
     bMesh.position.set(24, 0.45, 0);
     this.outerGroup.add(bMesh);
 
@@ -278,30 +266,50 @@ export class VehicleSystem {
     });
     this.disposedMaterials.push(this.altMat);
 
-    const aGeo1 = new THREE.BoxGeometry(2.2, 0.16, 20);
-    const aGeo2 = new THREE.BoxGeometry(12, 0.16, 2.2);
-    this.disposedGeometries.push(aGeo1, aGeo2);
+    const a1 = this.box(2.2, 0.16, 20, this.altMat);
+    a1.position.set(30, 0.46, 10);
+    const a2 = this.box(12, 0.16, 2.2, this.altMat);
+    a2.position.set(24, 0.46, 20);
+    const a3 = this.box(2.2, 0.16, 20, this.altMat);
+    a3.position.set(18, 0.46, 10);
+    this.outerGroup.add(a1, a2, a3);
 
-    const m1 = new THREE.Mesh(aGeo1, this.altMat);
-    m1.position.set(30, 0.46, 10);
-    const m2 = new THREE.Mesh(aGeo2, this.altMat);
-    m2.position.set(24, 0.46, 20);
-    const m3 = new THREE.Mesh(aGeo1, this.altMat);
-    m3.position.set(18, 0.46, 10);
-    this.outerGroup.add(m1, m2, m3);
-
-    this.updatables.push((dt, t, simState?: SimulationState) => {
-      const isBlocked = simState ? simState.blocked : false;
-      this.blockedMat.opacity += ((isBlocked ? 0.7 : 0) - this.blockedMat.opacity) * Math.min(1, dt * 6);
-      this.blockedMat.emissiveIntensity = isBlocked ? 0.6 + Math.sin(t * 6) * 0.4 : 0;
-      const aT = isBlocked ? 0.5 + Math.sin(t * 4) * 0.2 : 0;
+    this.updatables.push((dt, t) => {
+      const isB = this.lastBlocked;
+      this.blockedMat.opacity += ((isB ? 0.7 : 0) - this.blockedMat.opacity) * Math.min(1, dt * 6);
+      this.blockedMat.emissiveIntensity = isB ? 0.6 + Math.sin(t * 6) * 0.4 : 0;
+      const aT = isB ? 0.5 + Math.sin(t * 4) * 0.2 : 0;
       this.altMat.opacity += (aT - this.altMat.opacity) * Math.min(1, dt * 6);
-      this.altMat.emissiveIntensity = isBlocked ? 1.0 : 0;
+      this.altMat.emissiveIntensity = isB ? 1.0 : 0;
     });
+  }
+
+  public updateAll(dt: number, sim: SimulationState) {
+    if (sim.blocked !== this.lastBlocked) {
+      this.lastBlocked = sim.blocked;
+      for (const v of this.fleet) {
+        if (v.kind === "logistics") {
+          v.f.seg = 0;
+          v.f.prog = 0;
+          v.f.dir = 1;
+          v.f.wait = 0;
+        }
+      }
+    }
+
+    for (const v of this.fleet) {
+      let s = v.f.baseSpeed;
+      if (sim.active && v.kind === "logistics") s *= sim.slow;
+      if (v.kind === "forklift") s = v.f.baseSpeed * sim.warehouseBoost;
+      v.f.speed = s;
+      if (v.kind === "logistics") v.f.useAlt = sim.blocked;
+      v.f.update(dt, v.obj);
+    }
   }
 
   public dispose() {
     this.disposedGeometries.forEach((g) => g.dispose());
     this.disposedMaterials.forEach((m) => m.dispose());
+    this.matCache.clear();
   }
 }

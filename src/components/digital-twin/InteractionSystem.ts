@@ -55,8 +55,8 @@ export class InteractionSystem {
   private getPickList(): THREE.Object3D[] {
     const m = this.state.mode;
     if (m === "WORLD") return this.pickWorld;
-    if (m === "HQ") return this.hqPick;
-    if (m === "FAC") return this.facPick;
+    if (m === "HQ_INTERIOR") return this.hqPick;
+    if (m === "FACTORY_INTERIOR") return this.facPick;
     return [];
   }
 
@@ -82,7 +82,7 @@ export class InteractionSystem {
 
     if (obj.userData.isSun) {
       this.onSetTooltip(
-        this.state.worldMode === "night" ? "Moon — click for Day" : "Sun — click for Night",
+        this.state.isNight ? "Moon — click for Day" : "Sun — click for Night",
         e.clientX,
         e.clientY,
         true
@@ -136,7 +136,9 @@ export class InteractionSystem {
 
     if (obj.userData.buildingId) {
       const id = obj.userData.buildingId as FacilityId;
-      this.camController.focusBuilding(id);
+      if (id === "hq") this.camController.enterHQ();
+      else if (id === "factory") this.camController.enterFactory();
+      else this.camController.focusBuilding(id);
       return;
     }
 
@@ -148,6 +150,7 @@ export class InteractionSystem {
           { label: "Role", val: i.role },
           { label: "Status", val: i.status },
           { label: "Productivity Index", val: `${i.productivity}%` },
+          { label: "Assigned Location", val: i.desk || "Office" },
         ],
       });
       return;
@@ -180,7 +183,7 @@ export class InteractionSystem {
     this.bSystem.setHover(null);
     this.onSetHovered(null);
     this.onSetTooltip("", 0, 0, false);
-    this.domElement.style.cursor = "default";
+    this.domElement.style.cursor = "grab";
   }
 
   public dispose() {

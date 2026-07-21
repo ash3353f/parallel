@@ -29,10 +29,10 @@ export interface ScenarioData {
 export const sampleScenarios: ScenarioData[] = [
   {
     id: "scen-1",
-    name: "Scenario 1: Dynamic Supplier Reroute",
+    name: "Production Expansion",
     impacts: [
       { label: "+$3.4M Rev Boost", kind: "up" },
-      { label: "-42% Port Delay", kind: "down" },
+      { label: "+20.8% Output Cadence", kind: "up" },
       { label: "CONFIDENCE 96%", kind: "up" },
     ],
     base: {
@@ -52,14 +52,41 @@ export const sampleScenarios: ScenarioData[] = [
       tpOld: "1,200",
     },
     summary:
-      "Rerouting primary microchip supply through Seaport Terminal 4 avoids predicted H1 bottleneck, increasing daily factory throughput by +20.8% and net margin by +3.3%.",
+      "Expanding assembly Line 3 and optimizing cell load across Apex Factory increases daily output by +20.8%, boosting gross quarterly revenue by +$3.4M.",
   },
   {
     id: "scen-2",
-    name: "Scenario 2: Renewable Microgrid Peak Shaving",
+    name: "Warehouse Transatlantic Freight Re-route",
+    impacts: [
+      { label: "-42% Port Transit Delay", kind: "down" },
+      { label: "+$2.4M Margin Gain", kind: "up" },
+      { label: "CONFIDENCE 98%", kind: "up" },
+    ],
+    base: {
+      revenue: "$48.2M",
+      margin: "26.5%",
+      risk: "7.8%",
+      throughput: "1,250 units/day",
+    },
+    opt: {
+      revenue: "$50.6M",
+      margin: "29.9%",
+      risk: "2.1%",
+      throughput: "1,480 units/day",
+      revOld: "$48.2M",
+      marginOld: "26.5%",
+      riskOld: "7.8%",
+      tpOld: "1,250",
+    },
+    summary:
+      "Rerouting primary transatlantic shipments through Maritime Terminal 4 electric rail links bypasses highway port congestion, saving 3.2 days in dock dwell time.",
+  },
+  {
+    id: "scen-3",
+    name: "Energy Cost Optimization",
     impacts: [
       { label: "-$1.1M Energy Cost", kind: "down" },
-      { label: "+4.2% Margin Boost", kind: "up" },
+      { label: "+4.2% Net Margin Boost", kind: "up" },
       { label: "CONFIDENCE 94%", kind: "up" },
     ],
     base: {
@@ -69,7 +96,7 @@ export const sampleScenarios: ScenarioData[] = [
       throughput: "1,350 units/day",
     },
     opt: {
-      revenue: "$49.1M",
+      revenue: "$49.3M",
       margin: "30.7%",
       risk: "2.8%",
       throughput: "1,420 units/day",
@@ -79,43 +106,11 @@ export const sampleScenarios: ScenarioData[] = [
       tpOld: "1,350",
     },
     summary:
-      "Discharging battery energy storage during peak tariff hours (14:00-18:00) lowers Apex Factory grid draw, cutting overall operating overhead by $1.1M per quarter.",
-  },
-  {
-    id: "scen-3",
-    name: "Scenario 3: Autonomous Fleet Path Optimization",
-    impacts: [
-      { label: "+18% Transit Velocity", kind: "up" },
-      { label: "-24% Fuel Burn", kind: "down" },
-      { label: "CONFIDENCE 98%", kind: "up" },
-    ],
-    base: {
-      revenue: "$48.2M",
-      margin: "26.5%",
-      risk: "5.5%",
-      throughput: "1,280 units/day",
-    },
-    opt: {
-      revenue: "$50.4M",
-      margin: "28.9%",
-      risk: "2.1%",
-      throughput: "1,490 units/day",
-      revOld: "$48.2M",
-      marginOld: "26.5%",
-      riskOld: "5.5%",
-      tpOld: "1,280",
-    },
-    summary:
-      "Directing freight trucks along highway corridor V2 bypasses metropolitan traffic, cutting average warehouse delivery window from 4.2h to 2.8h.",
+      "Discharging battery energy storage during peak utility tariff hours (14:00-18:00) lowers grid draw at Apex Factory, cutting overall operating overhead by $1.1M per quarter.",
   },
 ];
 
-interface ScenarioComparisonProps {
-  activeScenario?: ScenarioData;
-  onSelectScenario?: (scen: ScenarioData) => void;
-}
-
-export const ScenarioComparison: React.FC<ScenarioComparisonProps> = () => {
+export const ScenarioComparison: React.FC = () => {
   const [selectedScen, setSelectedScen] = useState<ScenarioData>(sampleScenarios[0]);
 
   return (
@@ -134,7 +129,7 @@ export const ScenarioComparison: React.FC<ScenarioComparisonProps> = () => {
                 onClick={() => setSelectedScen(scen)}
                 className={selectedScen.id === scen.id ? "active" : ""}
               >
-                Scenario {index + 1}
+                {scen.name}
               </button>
             ))}
           </div>

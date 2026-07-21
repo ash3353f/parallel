@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-export type WorldMode = "WORLD" | "HQ" | "FAC";
+export type WorldMode = "WORLD" | "HQ_INTERIOR" | "FACTORY_INTERIOR";
 
 export type DayNightMode = "day" | "night";
 
@@ -69,6 +69,7 @@ export interface EmployeeInfo {
   role: string;
   status: string;
   productivity: number;
+  desk?: string;
 }
 
 export interface MachineInfo {
@@ -106,6 +107,7 @@ export interface DigitalTwinState {
   mode: WorldMode;
   worldMode: DayNightMode;
   dayFactor: number;
+  isNight: boolean;
   explore: boolean;
   selectedId: FacilityId | null;
   hoveredId: FacilityId | null;

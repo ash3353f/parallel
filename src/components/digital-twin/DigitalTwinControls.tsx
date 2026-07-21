@@ -79,8 +79,8 @@ export const DigitalTwinControls: React.FC<DigitalTwinControlsProps> = ({
   ];
 
   const getFacilityTitle = () => {
-    if (mode === "HQ") return "Executive HQ • Interior";
-    if (mode === "FAC") return "Apex Factory • Interior";
+    if (mode === "HQ_INTERIOR") return "Executive HQ • Office Interior";
+    if (mode === "FACTORY_INTERIOR") return "Apex Factory • Production Interior";
     switch (activeNav) {
       case "hq":
         return "Executive Headquarters";
@@ -92,8 +92,14 @@ export const DigitalTwinControls: React.FC<DigitalTwinControlsProps> = ({
         return "Maritime Port";
       case "energy":
         return "Renewable Energy Park";
+      case "logistics":
+        return "Logistics Hub";
+      case "distribution":
+        return "Distribution Center";
+      case "airport":
+        return "Air Cargo Terminal";
       default:
-        return "Enterprise Digital Twin Campus";
+        return "Enterprise Campus";
     }
   };
 
@@ -121,7 +127,7 @@ export const DigitalTwinControls: React.FC<DigitalTwinControlsProps> = ({
 
         {/* Action Controls */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* Day / Night Toggle — Fixed Action Labels */}
+          {/* Day / Night Toggle — Synchronized Labels */}
           <button
             onClick={onToggleDayNight}
             className="flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 px-3.5 py-1.5 text-xs font-bold text-slate-800 shadow-md backdrop-blur-xl transition hover:bg-slate-100 dark:border-white/10 dark:bg-slate-900/90 dark:text-slate-200 dark:hover:bg-slate-800"
@@ -188,7 +194,7 @@ export const DigitalTwinControls: React.FC<DigitalTwinControlsProps> = ({
 
       {/* Interior Floor Switcher HUD (Active inside HQ) */}
       <AnimatePresence>
-        {mode === "HQ" && (
+        {mode === "HQ_INTERIOR" && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}

@@ -1,24 +1,26 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { ArrowRight } from "lucide-react";
 
+export type AccessState = "locked" | "lamp-on" | "unlocked";
+
 interface LampAccessExperienceProps {
+  accessState: AccessState;
+  onStateChange: (state: AccessState) => void;
   onAccessGranted: () => void;
 }
 
-export const LampAccessExperience: React.FC<LampAccessExperienceProps> = ({ onAccessGranted }) => {
-  const [isOn, setIsOn] = useState(false);
-  const [isRevealing, setIsRevealing] = useState(false);
-  const [isGone, setIsGone] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("parallel_accessed") === "1";
-    }
-    return false;
-  });
+export const LampAccessExperience: React.FC<LampAccessExperienceProps> = ({
+  accessState,
+  onStateChange,
+  onAccessGranted,
+}) => {
   const [passcode, setPasscode] = useState(["", "", "", ""]);
   const [shake, setShake] = useState(false);
   const [passState, setPassState] = useState<"idle" | "err" | "ok">("idle");
+  const [cordOffset, setCordOffset] = useState(0);
+
   const inputRefs = [
     useRef<HTMLInputElement>(null),
     useRef<HTMLInputElement>(null),
@@ -26,20 +28,19 @@ export const LampAccessExperience: React.FC<LampAccessExperienceProps> = ({ onAc
     useRef<HTMLInputElement>(null),
   ];
 
-  // Cord Drag State
-  const [cordOffset, setCordOffset] = useState(0);
   const isDraggingRef = useRef(false);
   const startYRef = useRef(0);
 
-  useEffect(() => {
-    if (isGone) {
-      onAccessGranted();
-    }
-  }, [isGone, onAccessGranted]);
+  const isOn = accessState === "lamp-on" || accessState === "unlocked";
+  const isRevealing = passState === "ok";
 
-  const triggerToggleLamp = () => {
-    setIsOn((prev) => !prev);
-  };
+  const triggerToggleLamp = useCallback(() => {
+    if (accessState === "locked") {
+      onStateChange("lamp-on");
+    } else if (accessState === "lamp-on") {
+      onStateChange("locked");
+    }
+  }, [accessState, onStateChange]);
 
   const handleCordMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
     isDraggingRef.current = true;
@@ -75,7 +76,7 @@ export const LampAccessExperience: React.FC<LampAccessExperienceProps> = ({ onAc
       window.removeEventListener("touchmove", handlePointerMove);
       window.removeEventListener("touchend", handlePointerUp);
     };
-  }, [cordOffset]);
+  }, [cordOffset, triggerToggleLamp]);
 
   const handleDigitChange = (index: number, val: string) => {
     if (!/^\d*$/.test(val)) return;
@@ -117,32 +118,27 @@ export const LampAccessExperience: React.FC<LampAccessExperienceProps> = ({ onAc
   };
 
   const grantAccess = () => {
-    setIsRevealing(true);
     if (typeof window !== "undefined") {
-      localStorage.setItem("parallel_accessed", "1");
+      sessionStorage.setItem("parallel_accessed", "1");
     }
-    setTimeout(() => {
-      setIsGone(true);
-      onAccessGranted();
-    }, 900);
+    onStateChange("unlocked");
+    onAccessGranted();
   };
 
-  if (isGone) return null;
+  if (accessState === "unlocked") return null;
 
   return (
     <div
-      className={`lamp ${isOn ? "on" : ""} ${isRevealing ? "revealing" : ""} ${
-        isGone ? "gone" : ""
-      }`}
+      className={`lamp ${isOn ? "on" : ""} ${isRevealing ? "revealing" : ""}`}
     >
       <div className="vignette" />
 
-      {/* Skip Button */}
+      {/* Skip Intro Button */}
       <button onClick={grantAccess} className="lamp-skip">
         Skip Intro →
       </button>
 
-      {/* Lamp Light Cone & Floor Pool */}
+      {/* Lamp Light Cone & Pool */}
       <div className="lamp-light" />
       <div className="lamp-pool" />
 
@@ -162,7 +158,7 @@ export const LampAccessExperience: React.FC<LampAccessExperienceProps> = ({ onAc
       </div>
 
       <div className="lamp-stage">
-        {/* Lamp Fixture & Pull Cord */}
+        {/* Lamp Object */}
         <div className="lamp-obj">
           <div className="shade">
             <div className="face">
@@ -187,9 +183,9 @@ export const LampAccessExperience: React.FC<LampAccessExperienceProps> = ({ onAc
             <div className="knob" />
           </div>
 
-          <div className="cord-hint">↓ Pull cord</div>
+          <div className="cord-hint">↓ Pull cord to illuminate</div>
 
-          {/* Accessibility Lamp Switch */}
+          {/* Accessibility Switch */}
           <div className="lamp-a11y">
             <button onClick={triggerToggleLamp}>
               {isOn ? "Turn Off Lamp" : "Turn On Lamp"}

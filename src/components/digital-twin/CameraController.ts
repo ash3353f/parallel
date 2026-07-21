@@ -58,7 +58,7 @@ export class CameraController {
     if (this.iSystem.hqGroup) this.iSystem.hqGroup.visible = false;
     if (this.iSystem.facGroup) this.iSystem.facGroup.visible = false;
     this.outerGroup.visible = true;
-    this.env.setInteriorBG(false, this.state.dayFactor);
+    this.env.setInteriorBackground(false, this.state.dayFactor);
   }
 
   public worldOverview() {
@@ -97,14 +97,14 @@ export class CameraController {
       () => {
         this.outerGroup.visible = false;
         this.iSystem.hqGroup.visible = true;
-        this.env.setInteriorBG(true, this.state.dayFactor);
-        this.state.mode = "HQ";
+        this.env.setInteriorBackground(true, this.state.dayFactor);
+        this.state.mode = "HQ_INTERIOR";
         this.cameraTo(
           new THREE.Vector3(46, 40, 46),
           new THREE.Vector3(0, 5, 0),
           1.0,
           () => {
-            this.onModeChange("HQ", "hq");
+            this.onModeChange("HQ_INTERIOR", "hq");
           }
         );
       }
@@ -122,14 +122,14 @@ export class CameraController {
       () => {
         this.outerGroup.visible = false;
         this.iSystem.facGroup.visible = true;
-        this.env.setInteriorBG(true, this.state.dayFactor);
-        this.state.mode = "FAC";
+        this.env.setInteriorBackground(true, this.state.dayFactor);
+        this.state.mode = "FACTORY_INTERIOR";
         this.cameraTo(
           new THREE.Vector3(52, 42, 52),
           new THREE.Vector3(0, 4, 0),
           1.0,
           () => {
-            this.onModeChange("FAC", "factory");
+            this.onModeChange("FACTORY_INTERIOR", "factory");
           }
         );
       }
@@ -148,9 +148,9 @@ export class CameraController {
   }
 
   public resetCamera() {
-    if (this.state.mode === "HQ") {
+    if (this.state.mode === "HQ_INTERIOR") {
       this.cameraTo(new THREE.Vector3(46, 40, 46), new THREE.Vector3(0, 5, 0), 1.0);
-    } else if (this.state.mode === "FAC") {
+    } else if (this.state.mode === "FACTORY_INTERIOR") {
       this.cameraTo(new THREE.Vector3(52, 42, 52), new THREE.Vector3(0, 4, 0), 1.0);
     } else if (this.state.selectedId) {
       this.focusBuilding(this.state.selectedId);

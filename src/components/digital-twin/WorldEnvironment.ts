@@ -113,7 +113,7 @@ export class WorldEnvironment {
     });
     this.outerGroup.add(new THREE.Mesh(new THREE.SphereGeometry(900, 24, 16), this.skyMat));
 
-    const N = 300;
+    const N = 380;
     const pos = new Float32Array(N * 3);
     for (let i = 0; i < N; i++) {
       const r = 700;
@@ -184,6 +184,7 @@ export class WorldEnvironment {
     s.near = 10;
     s.far = 340;
     this.dir.shadow.bias = -0.0004;
+    this.dir.shadow.normalBias = 0.6;
     this.scene.add(this.dir);
     this.scene.add(this.dir.target);
 
@@ -199,7 +200,7 @@ export class WorldEnvironment {
 
     gsap.to(tweenObj, {
       f: targetFactor,
-      duration: 1.5,
+      duration: 1.7,
       ease: "power2.inOut",
       onUpdate: () => {
         onUpdateFactor(tweenObj.f);
@@ -248,7 +249,7 @@ export class WorldEnvironment {
     this.matSolar.emissiveIntensity = factor * 0.14;
   }
 
-  public setInteriorBG(on: boolean, dayFactor: number) {
+  public setInteriorBackground(on: boolean, dayFactor: number) {
     this.isInteriorBG = on;
     if (on) {
       this.scene.background = new THREE.Color(0xeef1f5);
