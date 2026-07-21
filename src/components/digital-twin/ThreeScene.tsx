@@ -8,6 +8,7 @@ import {
   FacilityId,
   SimResultRow,
   WorldMode,
+  DayNightMode,
   UpdatableFn,
 } from "./digitalTwinTypes";
 import { WorldEnvironment } from "./WorldEnvironment";
@@ -20,8 +21,10 @@ import { SimulationSystem } from "./SimulationSystem";
 
 export interface ThreeSceneRef {
   toggleDayNight: () => void;
+  setWorldMode: (mode: DayNightMode) => void;
   runSim: () => void;
   resetCamera: () => void;
+  setExplore: (on: boolean) => void;
   navWorldOverview: () => void;
   navFocusBuilding: (id: FacilityId) => void;
   navEnterHQ: () => void;
@@ -32,6 +35,8 @@ export interface ThreeSceneRef {
 
 interface ThreeSceneProps {
   onModeChange: (mode: WorldMode, facilityId: FacilityId | null) => void;
+  onWorldModeChange: (worldMode: DayNightMode) => void;
+  onExploreChange: (explore: boolean) => void;
   onShowFacilityPanel: (id: FacilityId) => void;
   onHideFacilityPanel: () => void;
   onShowInfoCard: (info: InfoCardData) => void;
@@ -40,13 +45,14 @@ interface ThreeSceneProps {
   onShowSimResults: (rows: SimResultRow[]) => void;
   onHideSimResults: () => void;
   onBumpKPIs: () => void;
-  onDayNightChange: (isNight: boolean) => void;
   onSetTooltip: (text: string, x: number, y: number, show: boolean) => void;
   onInitComplete?: (api: ThreeSceneRef) => void;
 }
 
 export const ThreeScene: React.FC<ThreeSceneProps> = ({
   onModeChange,
+  onWorldModeChange,
+  onExploreChange,
   onShowFacilityPanel,
   onHideFacilityPanel,
   onShowInfoCard,
@@ -55,7 +61,6 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
   onShowSimResults,
   onHideSimResults,
   onBumpKPIs,
-  onDayNightChange,
   onSetTooltip,
   onInitComplete,
 }) => {
@@ -84,7 +89,7 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
 
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.enabled = !isMobile;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.05;
@@ -112,6 +117,7 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
     controls.minPolarAngle = Math.PI * 0.1;
     controls.panSpeed = 0.6;
     controls.rotateSpeed = 0.7;
+    controls.enabled = false; // CALM & LOCKED overview by default until Explore is clicked!
 
     const outerGroup = new THREE.Group();
     scene.add(outerGroup);
@@ -121,8 +127,9 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
 
     const state: DigitalTwinState = {
       mode: "WORLD",
+      worldMode: "day",
       dayFactor: 1,
-      isNight: false,
+      explore: false,
       selectedId: null,
       hoveredId: null,
       hqFloor: 1,
@@ -137,7 +144,7 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
     };
 
     const env = new WorldEnvironment(scene, outerGroup, pickWorld, isMobile);
-    env.applyDayFactor(state.dayFactor);
+    env.apply(state.dayFactor);
 
     const bSystem = new BuildingSystem(outerGroup, pickWorld, updatables, env, isMobile);
     const vSystem = new VehicleSystem(outerGroup, updatables, bSystem, env);
@@ -161,27 +168,28 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
       }
     );
 
-    const toggleDayNight = () => {
-      state.isNight = !state.isNight;
-      const targetFactor = state.isNight ? 0 : 1;
-      const tweenObj = { f: state.dayFactor };
-
-      import("gsap").then(({ default: gsap }) => {
-        gsap.to(tweenObj, {
-          f: targetFactor,
-          duration: 1.7,
-          ease: "power2.inOut",
-          onUpdate: () => {
-            state.dayFactor = tweenObj.f;
-            env.applyDayFactor(state.dayFactor);
-          },
-        });
-      }).catch(() => {
-        state.dayFactor = targetFactor;
-        env.applyDayFactor(targetFactor);
+    const setWorldMode = (newMode: DayNightMode) => {
+      state.worldMode = newMode;
+      env.setWorldMode(newMode, state.dayFactor, (factor) => {
+        state.dayFactor = factor;
       });
+      onWorldModeChange(newMode);
+    };
 
-      onDayNightChange(state.isNight);
+    const toggleDayNight = () => {
+      const nextMode = state.worldMode === "day" ? "night" : "day";
+      setWorldMode(nextMode);
+    };
+
+    const setExplore = (on: boolean) => {
+      state.explore = on;
+      controls.enabled = on && state.mode === "WORLD";
+      onExploreChange(on);
+      if (on) {
+        camController.cameraTo(new THREE.Vector3(80, 70, 80), new THREE.Vector3(0, 2, 0), 1.0);
+      } else if (state.mode === "WORLD") {
+        camController.cameraTo(new THREE.Vector3(95, 82, 95), new THREE.Vector3(0, 2, 0), 1.0);
+      }
     };
 
     const simSystem = new SimulationSystem(
@@ -214,8 +222,10 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
 
     const apiRef: ThreeSceneRef = {
       toggleDayNight,
+      setWorldMode,
       runSim: () => simSystem.run(),
       resetCamera: () => camController.resetCamera(),
+      setExplore,
       navWorldOverview: () => camController.worldOverview(),
       navFocusBuilding: (id: FacilityId) => camController.focusBuilding(id),
       navEnterHQ: () => camController.enterHQ(),

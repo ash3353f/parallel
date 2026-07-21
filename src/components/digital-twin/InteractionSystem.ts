@@ -5,7 +5,7 @@ import { CameraController } from "./CameraController";
 
 export interface InfoCardData {
   title: string;
-  rows: [string, string][];
+  fields: { label: string; val: string }[];
 }
 
 export class InteractionSystem {
@@ -55,8 +55,8 @@ export class InteractionSystem {
   private getPickList(): THREE.Object3D[] {
     const m = this.state.mode;
     if (m === "WORLD") return this.pickWorld;
-    if (m === "HQ_INTERIOR") return this.hqPick;
-    if (m === "FACTORY_INTERIOR") return this.facPick;
+    if (m === "HQ") return this.hqPick;
+    if (m === "FAC") return this.facPick;
     return [];
   }
 
@@ -82,7 +82,7 @@ export class InteractionSystem {
 
     if (obj.userData.isSun) {
       this.onSetTooltip(
-        this.state.isNight ? "Moon — click for Day" : "Sun — click for Night",
+        this.state.worldMode === "night" ? "Moon — click for Day" : "Sun — click for Night",
         e.clientX,
         e.clientY,
         true
@@ -100,34 +100,31 @@ export class InteractionSystem {
       return;
     }
 
-    if (obj.userData.info) {
-      const title = obj.userData.info.Employee || obj.userData.info.Machine || "Element";
-      this.onSetTooltip(title, e.clientX, e.clientY, true);
+    if (obj.userData.empInfo) {
+      const info = obj.userData.empInfo;
+      this.onSetTooltip(`${info.name} • ${info.role}`, e.clientX, e.clientY, true);
       this.setHover(null);
       return;
     }
 
-    this.setHover(null);
-  }
+    if (obj.userData.machInfo) {
+      const info = obj.userData.machInfo;
+      this.onSetTooltip(`${info.name} • ${info.status}`, e.clientX, e.clientY, true);
+      this.setHover(null);
+      return;
+    }
 
-  private setHover(id: FacilityId | null) {
-    if (this.state.hoveredId === id) return;
-    this.state.hoveredId = id;
-    this.onSetHovered(id);
-  }
-
-  private clearHover() {
-    this.onSetTooltip("", 0, 0, false);
-    this.domElement.style.cursor = "grab";
-    this.setHover(null);
+    this.clearHover();
   }
 
   private onUp(e: PointerEvent) {
     if (!this.pointerDownState) return;
-    const moved = Math.hypot(e.clientX - this.pointerDownState.x, e.clientY - this.pointerDownState.y);
+    const dx = e.clientX - this.pointerDownState.x;
+    const dy = e.clientY - this.pointerDownState.y;
     const dt = performance.now() - this.pointerDownState.t;
     this.pointerDownState = null;
-    if (moved > 6 || dt > 350) return;
+
+    if (Math.hypot(dx, dy) > 6 || dt > 400) return;
 
     const obj = this.pick(e);
     if (!obj) return;
@@ -139,26 +136,55 @@ export class InteractionSystem {
 
     if (obj.userData.buildingId) {
       const id = obj.userData.buildingId as FacilityId;
-      if (id === "hq") this.camController.enterHQ();
-      else if (id === "factory") this.camController.enterFactory();
-      else this.camController.focusBuilding(id);
+      this.camController.focusBuilding(id);
       return;
     }
 
-    if (obj.userData.info) {
-      const infoObj = obj.userData.info as Record<string, string | number>;
-      const title = String(infoObj.Employee || infoObj.Machine || "Detail");
-      const rows: [string, string][] = [];
-      for (const k in infoObj) {
-        if (k === "Employee" || k === "Machine") continue;
-        rows.push([k, String(infoObj[k])]);
-      }
-      this.onShowInfoCard({ title, rows });
+    if (obj.userData.empInfo) {
+      const i = obj.userData.empInfo;
+      this.onShowInfoCard({
+        title: `Employee: ${i.name}`,
+        fields: [
+          { label: "Role", val: i.role },
+          { label: "Status", val: i.status },
+          { label: "Productivity Index", val: `${i.productivity}%` },
+        ],
+      });
+      return;
+    }
+
+    if (obj.userData.machInfo) {
+      const m = obj.userData.machInfo;
+      this.onShowInfoCard({
+        title: `Machine: ${m.name}`,
+        fields: [
+          { label: "Asset ID", val: m.id },
+          { label: "Status", val: m.status },
+          { label: "Operating Temp", val: `${m.temp}°C` },
+          { label: "Power Draw", val: `${m.power} kW` },
+          { label: "Throughput", val: m.output },
+          { label: "Efficiency Rating", val: `${m.eff}%` },
+          { label: "Wear Risk Level", val: m.risk },
+        ],
+      });
       return;
     }
   }
 
+  private setHover(id: FacilityId | null) {
+    this.bSystem.setHover(id);
+    this.onSetHovered(id);
+  }
+
+  private clearHover() {
+    this.bSystem.setHover(null);
+    this.onSetHovered(null);
+    this.onSetTooltip("", 0, 0, false);
+    this.domElement.style.cursor = "default";
+  }
+
   public dispose() {
     this.cleanups.forEach((fn) => fn());
+    this.cleanups = [];
   }
 }

@@ -30,11 +30,8 @@ export interface CompanyWorldProps {
 
 export function CompanyWorld({ onEnterBuilding, className }: CompanyWorldProps) {
   return (
-    <section className="relative w-full overflow-hidden">
-      <DigitalTwinWorldDynamic
-        onEnterBuilding={onEnterBuilding}
-        className={className}
-      />
+    <section className={`relative w-full overflow-hidden ${className || ""}`}>
+      <DigitalTwinWorldDynamic />
     </section>
   );
 }

@@ -1,33 +1,46 @@
 "use client";
 
-import { motion } from "framer-motion";
+import React from "react";
 
-const moments = [
-  { label: "Past", text: "Q2 revenue beat plan by 8%; hiring remained efficient." },
-  { label: "Present", text: "Operations stable with low risk and elevated demand." },
-  { label: "Future", text: "Scenario planning targets margin expansion and capacity growth." },
-];
-
-export function Timeline() {
+export const Timeline: React.FC = () => {
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, delay: 0.25 }}
-      className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 shadow-2xl shadow-purple-500/10 backdrop-blur-2xl"
-    >
-      <h2 className="text-xl font-semibold text-white">Timeline</h2>
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
-        {moments.map((moment, index) => (
-          <div key={moment.label} className="relative rounded-3xl border border-white/10 bg-black/20 p-5">
-            <div className="mb-4 flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-cyan-300 to-purple-400 text-sm font-bold text-black">{index + 1}</span>
-              <span className="font-semibold text-white">{moment.label}</span>
-            </div>
-            <p className="text-sm leading-6 text-slate-400">{moment.text}</p>
+    <section className="section" id="section-timeline">
+      <div className="wrap">
+        <div className="timeline-head">
+          <span className="eyebrow">Executive Decision Log</span>
+          <h2>Autonomous Strategy Timeline</h2>
+        </div>
+
+        <div className="tl in">
+          <div className="trackline">
+            <div className="fill" style={{ width: "66%" }} />
           </div>
-        ))}
+
+          {/* Node 1 - Past */}
+          <div className="tl-node past">
+            <div className="pt">✓</div>
+            <div className="when">Q1 2026 • EXECUTED</div>
+            <h4>Autonomous BESS Deployment</h4>
+            <p>Integrated 5MWh lithium battery storage microgrid at Apex Factory, reducing utility peak tariff draw by 18.5%.</p>
+          </div>
+
+          {/* Node 2 - Present */}
+          <div className="tl-node present">
+            <div className="pt">2</div>
+            <div className="when">Q2 2026 • IN PROGRESS</div>
+            <h4>Seaport Terminal 4 Freight Reroute</h4>
+            <p>Currently routing primary microchip shipments through electric rail links to eliminate H1 bottleneck delays.</p>
+          </div>
+
+          {/* Node 3 - Future */}
+          <div className="tl-node future">
+            <div className="pt">3</div>
+            <div className="when">Q3 2026 • SIMULATED TARGET</div>
+            <h4>Full Autonomous Logistics Fleet</h4>
+            <p>Deploying AI-driven autonomous trucks across highway Corridor V2 to achieve 99.8% on-time warehouse fulfillment.</p>
+          </div>
+        </div>
       </div>
-    </motion.section>
+    </section>
   );
-}
+};

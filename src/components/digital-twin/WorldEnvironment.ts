@@ -1,4 +1,6 @@
 import * as THREE from "three";
+import gsap from "gsap";
+import { DayNightMode } from "./digitalTwinTypes";
 
 function makeGlowTexture(): THREE.CanvasTexture {
   const c = document.createElement("canvas");
@@ -36,6 +38,7 @@ export class WorldEnvironment {
 
   private isInteriorBG = false;
   private glowTexture: THREE.CanvasTexture | null = null;
+  public currentMode: DayNightMode = "day";
 
   constructor(
     private scene: THREE.Scene,
@@ -110,7 +113,7 @@ export class WorldEnvironment {
     });
     this.outerGroup.add(new THREE.Mesh(new THREE.SphereGeometry(900, 24, 16), this.skyMat));
 
-    const N = 380;
+    const N = 300;
     const pos = new Float32Array(N * 3);
     for (let i = 0; i < N; i++) {
       const r = 700;
@@ -170,7 +173,7 @@ export class WorldEnvironment {
 
     this.dir = new THREE.DirectionalLight(0xfff2d8, 1.6);
     this.dir.position.set(80, 130, 60);
-    this.dir.castShadow = true;
+    this.dir.castShadow = !this.isMobile;
     const mapSize = this.isMobile ? 1024 : 2048;
     this.dir.shadow.mapSize.set(mapSize, mapSize);
     const s = this.dir.shadow.camera;
@@ -181,7 +184,6 @@ export class WorldEnvironment {
     s.near = 10;
     s.far = 340;
     this.dir.shadow.bias = -0.0004;
-    this.dir.shadow.normalBias = 0.6;
     this.scene.add(this.dir);
     this.scene.add(this.dir.target);
 
@@ -190,32 +192,48 @@ export class WorldEnvironment {
     this.scene.add(this.amb, this.hemi);
   }
 
-  public applyDayFactor(dayFactor: number) {
-    const f = Math.max(0, Math.min(1, dayFactor));
+  public setWorldMode(mode: DayNightMode, currentDayFactor: number, onUpdateFactor: (factor: number) => void) {
+    this.currentMode = mode;
+    const targetFactor = mode === "day" ? 1.0 : 0.0;
+    const tweenObj = { f: currentDayFactor };
+
+    gsap.to(tweenObj, {
+      f: targetFactor,
+      duration: 1.5,
+      ease: "power2.inOut",
+      onUpdate: () => {
+        onUpdateFactor(tweenObj.f);
+        this.apply(tweenObj.f);
+      },
+    });
+  }
+
+  public apply(f: number) {
+    const factor = Math.max(0, Math.min(1, f));
     const lc = (a: number, b: number, t: number) =>
       new THREE.Color(a).lerp(new THREE.Color(b), t);
 
-    this.skyMat.uniforms.uTop.value = lc(0x060a22, 0x2f7fd6, f);
-    this.skyMat.uniforms.uBottom.value = lc(0x14224d, 0x9fd0ff, f);
+    this.skyMat.uniforms.uTop.value = lc(0x060a22, 0x2f7fd6, factor);
+    this.skyMat.uniforms.uBottom.value = lc(0x14224d, 0x9fd0ff, factor);
 
-    this.sunMesh.scale.setScalar(0.2 + f * 0.9);
+    this.sunMesh.scale.setScalar(0.2 + factor * 0.9);
     (this.sunMesh.material as THREE.MeshBasicMaterial).color.copy(
-      lc(0xff8a3c, 0xffd24a, f)
+      lc(0xff8a3c, 0xffd24a, factor)
     );
-    this.moonMesh.scale.setScalar(0.2 + (1 - f) * 0.9);
-    this.glow.material.color.copy(lc(0x6f86c8, 0xffd24a, f));
-    this.glow.material.opacity = 0.35 + f * 0.5;
+    this.moonMesh.scale.setScalar(0.2 + (1 - factor) * 0.9);
+    this.glow.material.color.copy(lc(0x6f86c8, 0xffd24a, factor));
+    this.glow.material.opacity = 0.35 + factor * 0.5;
 
-    (this.stars.material as THREE.PointsMaterial).opacity = (1 - f) * 0.9;
+    (this.stars.material as THREE.PointsMaterial).opacity = (1 - factor) * 0.9;
 
-    this.dir.intensity = 0.15 + f * 1.5;
-    this.dir.color.copy(lc(0x6f86c8, 0xfff2d8, f));
+    this.dir.intensity = 0.15 + factor * 1.5;
+    this.dir.color.copy(lc(0x6f86c8, 0xfff2d8, factor));
 
-    this.amb.intensity = 0.16 + f * 0.6;
-    this.amb.color.copy(lc(0x22305f, 0xbfd4ff, f));
-    this.hemi.intensity = 0.12 + f * 0.45;
+    this.amb.intensity = 0.16 + factor * 0.6;
+    this.amb.color.copy(lc(0x22305f, 0xbfd4ff, factor));
+    this.hemi.intensity = 0.12 + factor * 0.45;
 
-    const horizon = lc(0x14224d, 0x9fd0ff, f);
+    const horizon = lc(0x14224d, 0x9fd0ff, factor);
     if (!this.isInteriorBG) {
       this.scene.background = horizon.clone();
       if (this.scene.fog) {
@@ -223,14 +241,14 @@ export class WorldEnvironment {
       }
     }
 
-    this.matWindow.emissiveIntensity = (1 - f) * 1.15;
-    this.matLamp.emissiveIntensity = (1 - f) * 1.6;
-    this.matRunway.emissiveIntensity = (1 - f) * 2.0;
-    this.matHead.emissiveIntensity = (1 - f) * 2.4;
-    this.matSolar.emissiveIntensity = f * 0.14;
+    this.matWindow.emissiveIntensity = (1 - factor) * 1.15;
+    this.matLamp.emissiveIntensity = (1 - factor) * 1.6;
+    this.matRunway.emissiveIntensity = (1 - factor) * 2.0;
+    this.matHead.emissiveIntensity = (1 - factor) * 2.4;
+    this.matSolar.emissiveIntensity = factor * 0.14;
   }
 
-  public setInteriorBackground(on: boolean, dayFactor: number) {
+  public setInteriorBG(on: boolean, dayFactor: number) {
     this.isInteriorBG = on;
     if (on) {
       this.scene.background = new THREE.Color(0xeef1f5);
@@ -238,7 +256,7 @@ export class WorldEnvironment {
         this.scene.fog.color.set(0xeef1f5);
       }
     } else {
-      this.applyDayFactor(dayFactor);
+      this.apply(dayFactor);
     }
   }
 
